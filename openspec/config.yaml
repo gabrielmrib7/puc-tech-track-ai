@@ -1,0 +1,60 @@
+schema: spec-driven
+
+# Contexto do Projeto para orientar os Agentes de IA na criação de artefatos
+context: |
+  Projeto: TechTrack — Plataforma para gestão de ordens de serviço (OS) e rastreamento em tempo real do ciclo de reparos em assistências técnicas.
+  
+  Stack Tecnológica Oficial:
+  - Frontend: Next.js (App Router), React 18+, TypeScript (modo estrito: strict: true)
+  - UI & Estilização: Tailwind CSS, Lucide Icons, Technical Precision System (Primária #2563EB, grade 4px, WCAG AA, fonte Inter)
+  - Backend API: REST modular (/api/v1) integrado ao Next.js em 4 camadas limpas (Presentation, Application, Domain, Infrastructure)
+  - Banco de Dados: PostgreSQL via Supabase com Prisma ORM (prisma/schema.prisma)
+  - Autenticação & RBAC: Clerk (Roles: ADMIN, ATTENDANT, TECHNICIAN, CUSTOMER)
+  - Testes: Vitest / Jest (Unitários e Integração) e Playwright (E2E)
+  
+  Invariantes de Domínio e Arquitetura:
+  - Backend Authority: Toda autorização, isolamento de dados e validação de negócio reside no backend. Nunca confiar apenas no frontend.
+  - Isolamento de Clientes: Usuários com role CUSTOMER só podem consultar e interagir com ordens vinculadas ao seu respectivo customer.user_id. Acesso cruzado deve retornar HTTP 403 ou 404.
+  - Máquina de Estados da OS: Transições estritas (RECEIVED -> WAITING_DIAGNOSIS -> IN_DIAGNOSIS -> WAITING_APPROVAL -> APPROVED/REJECTED -> IN_REPAIR -> COMPLETED -> READY_FOR_PICKUP -> DELIVERED). Transições inválidas devem ser rejeitadas com HTTP 400 ou 422. DELIVERED e CANCELLED são estados finais imutáveis.
+  - Transações Atômicas (ACID): Operações de aprovação/recusa de orçamento devem rodar dentro de prisma.$transaction, atualizando Budget, ServiceOrder e gerando histórico imutável em ServiceOrderHistory atomicamente com ROLLBACK total em qualquer falha.
+  - Observabilidade e LGPD: Logs estruturados em formato JSON com timestamp UTC, sem exposição de tokens, senhas ou dados sensíveis.
+
+# Regras personalizadas por tipo de artefato
+rules:
+  proposal:
+    - "Identificar claramente as personas e perfis RBAC impactados (ADMIN, ATTENDANT, TECHNICIAN, CUSTOMER)."
+    - "Respeitar a divisão do monólito modular em 4 camadas e evitar adicionar dependências externas desnecessárias."
+    - "Mapear impactos em integridade transacional, migrações do Prisma e modelos relacionais."
+    - "Explicitar não-objetivos (Non-goals) para preservar o escopo do MVP."
+
+  specs:
+    - "Definir requisitos funcionais e não-funcionais acompanhados de cenários verificáveis (estilo BDD/Gherkin)."
+    - "Para alterações de ciclo de vida da OS, especificar a matriz de transições válidas e a rejeição de transições inválidas (HTTP 400/422)."
+    - "Para fluxos de orçamento, especificar os requisitos de atomicidade ACID e rollback em falhas."
+    - "Detalhar as regras de autorização RBAC com cenários de sucesso e de acesso proibido (HTTP 403/404)."
+
+  design:
+    - "Seguir rigorosamente o Technical Precision System (Azul #2563EB, superfícies claras/escuras mapeadas, grade de 4px, WCAG AA)."
+    - "Adotar abordagem Mobile-First para o portal do cliente e desktop de alta densidade informativa para a assistência técnica."
+    - "Garantir transparência de status: usar rótulos humanizados e claros na linha do tempo (ex: 'Reparo em andamento' em vez de enum cru)."
+    - "Priorizar formulários com validação inline e fluxo de aprovação de orçamento em 1 clique."
+
+  tasks:
+    - "Estruturar as tarefas orientadas à Pirâmide de Testes (Unitários -> Integração -> E2E)."
+    - "Incluir tarefas específicas para testes críticos da arquitetura: autenticação/RBAC, integridade da máquina de estados e atomicidade de orçamentos."
+    - "Exigir validação estática em cada entrega: checagem de tipos (tsc --noEmit) e lint (npm run lint)."
+    - "Manter tarefas pequenas, modulares e independentemente verificáveis."
+
+# Diretrizes operacionais para execução e arquivamento de mudanças
+operations:
+  apply:
+    guidance:
+      - "Validar estaticamente o código com 'npx tsc --noEmit' e 'npm run lint' antes de concluir qualquer tarefa."
+      - "Garantir que operações de aprovação/recusa de orçamento usem 'prisma.$transaction' com registro imutável em 'ServiceOrderHistory'."
+      - "Implementar testes automatizados para novas regras de domínio ou transições de máquina de estados antes de finalizar a implementação."
+      - "Respeitar a separação das 4 camadas (Domain sem dependências externas, Use Cases na Application, Repositórios na Infrastructure)."
+  archive:
+    guidance:
+      - "Executar a suíte de testes e certificar que todos os testes críticos (autenticação, OS, orçamento, RBAC) continuam verdes."
+      - "Garantir que as especificações duráveis em specs/ refletem com precisão as alterações implementadas."
+      - "Registrar um resumo claro do resultado do arquivamento e dos impactos gerados no sistema."

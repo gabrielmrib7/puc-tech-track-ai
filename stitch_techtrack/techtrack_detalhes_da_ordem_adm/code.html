@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TechTrack - Detalhes da Ordem de Serviço</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-tertiary-fixed-variant": "#004b73",
+                        "tertiary-fixed-dim": "#93ccff",
+                        "surface-container-high": "#e2e7ff",
+                        "surface-container-highest": "#dae2fd",
+                        "surface-tint": "#0053db",
+                        "surface": "#faf8ff",
+                        "on-tertiary-container": "#e7f2ff",
+                        "primary-fixed": "#dbe1ff",
+                        "on-surface": "#131b2e",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#131b2e",
+                        "surface-container": "#eaedff",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#0073ae",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#d5e3fc",
+                        "inverse-surface": "#283044",
+                        "on-primary-container": "#eeefff",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#eef0ff",
+                        "secondary-container": "#d5e3fc",
+                        "surface-bright": "#faf8ff",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#001d31",
+                        "primary": "#004ac6",
+                        "inverse-primary": "#b4c5ff",
+                        "outline-variant": "#c3c6d7",
+                        "primary-container": "#2563eb",
+                        "on-secondary-container": "#57657a",
+                        "tertiary": "#005a89",
+                        "secondary": "#515f74",
+                        "surface-dim": "#d2d9f4",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#737686",
+                        "on-primary-fixed": "#00174b",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed": "#cce5ff",
+                        "surface-variant": "#dae2fd",
+                        "on-surface-variant": "#434655",
+                        "surface-container-low": "#f2f3ff",
+                        "background": "#faf8ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "stack-md": "16px",
+                        "container-max": "1440px",
+                        "unit": "4px",
+                        "stack-xs": "4px",
+                        "margin-desktop": "32px",
+                        "gutter": "24px",
+                        "stack-xl": "48px",
+                        "stack-sm": "8px",
+                        "stack-lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", {"lineHeight": "1", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.25", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-sm": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md text-body-md flex antialiased light">
+<!-- SideNavBar -->
+<nav class="bg-surface shadow-[0px_1px_3px_rgba(15,23,42,0.08),0px_4px_6px_rgba(15,23,42,0.05)] hidden md:flex flex-col h-full border-r border-outline-variant/30 fixed left-0 top-0 h-screen w-[280px] z-20">
+<div class="p-6 border-b border-outline-variant/30">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">build_circle</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">TechTrack</h1>
+<p class="font-label-sm text-label-sm text-secondary">Technical Assistance SaaS</p>
+</div>
+</div>
+</div>
+<div class="flex-1 py-6 flex flex-col gap-2 px-4">
+<a class="flex items-center gap-3 text-secondary hover:text-primary hover:bg-surface-container-low transition-colors duration-200 px-4 py-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 bg-primary-container/10 text-primary border-l-4 border-primary font-bold px-4 py-3 rounded-lg shadow-sm" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">handyman</span>
+<span class="font-label-md text-label-md">Ordens de Serviço</span>
+</a>
+<a class="flex items-center gap-3 text-secondary hover:text-primary hover:bg-surface-container-low transition-colors duration-200 px-4 py-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-md text-label-md">Clientes</span>
+</a>
+<a class="flex items-center gap-3 text-secondary hover:text-primary hover:bg-surface-container-low transition-colors duration-200 px-4 py-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">precision_manufacturing</span>
+<span class="font-label-md text-label-md">Equipamentos</span>
+</a>
+<a class="flex items-center gap-3 text-secondary hover:text-primary hover:bg-surface-container-low transition-colors duration-200 px-4 py-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+<div class="p-4 border-t border-outline-variant/30">
+<a class="flex items-center gap-3 text-secondary hover:text-primary hover:bg-surface-container-low transition-colors duration-200 px-4 py-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md text-label-md">Help Center</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 md:ml-[280px] flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-surface border-b border-outline-variant/50 flex justify-between items-center w-full h-16 px-margin-desktop sticky top-0 z-10 hidden md:flex">
+<div class="flex-1 max-w-xl">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg font-body-sm text-body-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all" placeholder="Buscar OS, cliente ou equipamento..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:bg-surface-container-high rounded-full p-2 transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high rounded-full p-2 transition-all">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant ml-2">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a corporate user, neutral lighting, minimalist background, confident expression, sharp focus, high-quality corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAo1lUgWOkcinVfqFQiseFhkQzdBFVj7ZY6a017_SwzRJxlr6FgoakXHUMRvIjzs_azx-CFLKkLT4G52q4LX2ZEwjhGlwqVyusBAzGYkIonPgGCEDmxXM2-IG-0KxR01bLW1rxbvf3m3RNCtKiAxzYMtGK1l7Yb26fPSoiDpxUI6mxqSxCNeFkTij9bzPWz9wWIxEK-GQrbYPFt8Wa6vNY_NuWcU6yhyYmSlvPD6BxRxwgFOFM9HqkwoA"/>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 p-margin-mobile md:p-margin-desktop bg-surface-container-lowest">
+<!-- Page Header: Order Details -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<button class="text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">OS-2026-000123</h2>
+</div>
+<p class="font-body-md text-body-md text-secondary ml-10">Criado em 14 de Outubro, 2026 - 09:42</p>
+</div>
+<div class="flex items-center gap-4 ml-10 md:ml-0">
+<div class="inline-flex items-center px-4 py-2 rounded-full bg-tertiary-container/10 text-tertiary border border-tertiary/20">
+<span class="w-2 h-2 rounded-full bg-tertiary mr-2 animate-pulse"></span>
+<span class="font-label-md text-label-md uppercase">Em Reparo</span>
+</div>
+<button class="bg-primary hover:bg-primary-container text-on-primary px-6 py-2 rounded-lg font-label-md text-label-md shadow-sm transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined">edit_document</span>
+                        Atualizar Status
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-gutter">
+<!-- Left Column: Details (7 cols) -->
+<div class="xl:col-span-7 flex flex-col gap-6">
+<!-- Client & Equipment Info Card -->
+<div class="bg-surface rounded-lg shadow-[0px_1px_3px_rgba(15,23,42,0.08),0px_4px_6px_rgba(15,23,42,0.05)] border border-outline-variant/30 overflow-hidden">
+<div class="p-6 border-b border-outline-variant/30 bg-surface-container-lowest flex justify-between items-center">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">info</span>
+                                Informações da Ordem
+                            </h3>
+<button class="text-secondary hover:text-primary"><span class="material-symbols-outlined">edit</span></button>
+</div>
+<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Client Info -->
+<div class="space-y-4">
+<div>
+<h4 class="font-label-sm text-label-sm text-secondary uppercase tracking-wider mb-1">Cliente</h4>
+<div class="flex items-center gap-3 mt-2">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-headline-sm text-headline-sm">
+                                            AC
+                                        </div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Acme Corporation</p>
+<p class="font-body-sm text-body-sm text-secondary">contato@acmecorp.com.br</p>
+</div>
+</div>
+</div>
+<div>
+<h4 class="font-label-sm text-label-sm text-secondary uppercase tracking-wider mb-1">Telefone</h4>
+<p class="font-body-md text-body-md text-on-surface">(11) 98765-4321</p>
+</div>
+</div>
+<!-- Equipment Info -->
+<div class="space-y-4">
+<div>
+<h4 class="font-label-sm text-label-sm text-secondary uppercase tracking-wider mb-1">Equipamento</h4>
+<div class="flex items-center gap-2 mt-2">
+<span class="material-symbols-outlined text-outline">dns</span>
+<p class="font-label-md text-label-md text-on-surface">Servidor Dell PowerEdge R740</p>
+</div>
+<p class="font-body-sm text-body-sm text-secondary ml-8">S/N: DLR740-9982-A1</p>
+</div>
+<div>
+<h4 class="font-label-sm text-label-sm text-secondary uppercase tracking-wider mb-1">Técnico Responsável</h4>
+<div class="flex items-center gap-2 mt-2">
+<div class="w-6 h-6 rounded-full overflow-hidden border border-outline-variant">
+<img alt="Technician" class="w-full h-full object-cover" data-alt="A professional headshot of a service technician wearing a clean uniform, modern workshop background, bright lighting, high resolution." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdwonQ1wL7cJpaSjl_rsU5vKt3gBiCN2owPudBW5KK8lwybpVUnXfid3rZBn2hAvX0PyCm94vQnWLI_QCfTieD4YZIEyMo820BwAnCMTPbjdtAqKDZxKIsQXbt4FoiGYIwmTW6e37RU9tlZ0I_fzjSE5EKXJ6ytmIZUTHxfxcAIjVgjQkXo2oelHv-PWRrlbkqY-FQM6tiqfwejJSSfy-8GbiO6yklWqbcwLg1SWB1zVm8183Jtj4G8w"/>
+</div>
+<p class="font-body-md text-body-md text-on-surface">Roberto Almeida</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Problem Description Card -->
+<div class="bg-surface rounded-lg shadow-[0px_1px_3px_rgba(15,23,42,0.08),0px_4px_6px_rgba(15,23,42,0.05)] border border-outline-variant/30 overflow-hidden">
+<div class="p-6 border-b border-outline-variant/30 bg-surface-container-lowest">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-error">report_problem</span>
+                                Problema Relatado
+                            </h3>
+</div>
+<div class="p-6 bg-surface-bright">
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+                                Cliente reporta que o servidor está apresentando falhas intermitentes de reinicialização sob carga alta. Ocorreram 3 falhas nas últimas 48 horas. Led de diagnóstico frontal indica erro de temperatura (Âmbar piscante), mas a sala do data center está devidamente refrigerada a 20°C.
+                            </p>
+</div>
+</div>
+<!-- Diagnostic & Budget Card -->
+<div class="bg-surface rounded-lg shadow-[0px_1px_3px_rgba(15,23,42,0.08),0px_4px_6px_rgba(15,23,42,0.05)] border border-outline-variant/30 overflow-hidden">
+<div class="p-6 border-b border-outline-variant/30 bg-surface-container-lowest flex justify-between items-center">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">request_quote</span>
+                                Diagnóstico e Orçamento
+                            </h3>
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-sm text-label-sm uppercase">Aprovado</span>
+</div>
+<div class="p-6 space-y-6">
+<div>
+<h4 class="font-label-md text-label-md text-on-surface mb-2">Diagnóstico Técnico:</h4>
+<p class="font-body-sm text-body-sm text-secondary bg-surface-container-low p-4 rounded-lg border border-outline-variant/50">
+                                    Falha no sensor térmico da placa mãe e ressecamento extremo da pasta térmica no Processador 1. Necessária a substituição do módulo sensor e aplicação de nova interface térmica de alta performance.
+                                </p>
+</div>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-lowest border-b border-outline-variant/50">
+<th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase">Item/Serviço</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase text-right">Qtd</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase text-right">Valor Unit.</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase text-right">Total</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm">
+<tr class="border-b border-outline-variant/30 hover:bg-surface-container-low">
+<td class="py-3 px-4 text-on-surface">Módulo Sensor Térmico Dell P/N 4XYZ</td>
+<td class="py-3 px-4 text-right">1</td>
+<td class="py-3 px-4 text-right">R$ 450,00</td>
+<td class="py-3 px-4 text-right font-label-md">R$ 450,00</td>
+</tr>
+<tr class="border-b border-outline-variant/30 hover:bg-surface-container-low">
+<td class="py-3 px-4 text-on-surface">Pasta Térmica Alta Performance (Serviço)</td>
+<td class="py-3 px-4 text-right">1</td>
+<td class="py-3 px-4 text-right">R$ 120,00</td>
+<td class="py-3 px-4 text-right font-label-md">R$ 120,00</td>
+</tr>
+<tr class="border-b border-outline-variant/30 hover:bg-surface-container-low">
+<td class="py-3 px-4 text-on-surface">Mão de Obra Técnica Especializada (Horas)</td>
+<td class="py-3 px-4 text-right">3</td>
+<td class="py-3 px-4 text-right">R$ 150,00</td>
+<td class="py-3 px-4 text-right font-label-md">R$ 450,00</td>
+</tr>
+</tbody>
+<tfoot>
+<tr>
+<td class="py-4 px-4 text-right font-label-md text-label-md text-secondary" colspan="3">Total Aprovado:</td>
+<td class="py-4 px-4 text-right font-headline-sm text-headline-sm text-primary">R$ 1.020,00</td>
+</tr>
+</tfoot>
+</table>
+<div class="flex justify-end gap-3 pt-4 border-t border-outline-variant/30">
+<button class="px-4 py-2 border border-outline text-secondary rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-colors">
+                                    Imprimir Orçamento
+                                </button>
+<button class="px-4 py-2 border border-primary text-primary rounded-lg font-label-md text-label-md hover:bg-primary-container/10 transition-colors">
+                                    Editar Valores
+                                </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Timeline & Log (5 cols) -->
+<div class="xl:col-span-5 flex flex-col gap-6">
+<!-- Timeline Card -->
+<div class="bg-surface rounded-lg shadow-[0px_1px_3px_rgba(15,23,42,0.08),0px_4px_6px_rgba(15,23,42,0.05)] border border-outline-variant/30 overflow-hidden">
+<div class="p-6 border-b border-outline-variant/30 bg-surface-container-lowest">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">timeline</span>
+                                Status de Progresso
+                            </h3>
+</div>
+<div class="p-6 pl-8">
+<div class="relative border-l-2 border-outline-variant/50 space-y-8 pb-4">
+<!-- Step 1: Recebido -->
+<div class="relative pl-6">
+<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center ring-4 ring-surface">
+<span class="material-symbols-outlined text-[10px] text-on-primary font-bold">check</span>
+</div>
+<h4 class="font-label-md text-label-md text-on-surface">Recebido</h4>
+<p class="font-body-sm text-body-sm text-secondary">14/10/2026 - 09:42</p>
+</div>
+<!-- Step 2: Diagnóstico -->
+<div class="relative pl-6">
+<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center ring-4 ring-surface">
+<span class="material-symbols-outlined text-[10px] text-on-primary font-bold">check</span>
+</div>
+<h4 class="font-label-md text-label-md text-on-surface">Diagnóstico Realizado</h4>
+<p class="font-body-sm text-body-sm text-secondary">15/10/2026 - 11:30</p>
+</div>
+<!-- Step 3: Aprovação -->
+<div class="relative pl-6">
+<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center ring-4 ring-surface">
+<span class="material-symbols-outlined text-[10px] text-on-primary font-bold">check</span>
+</div>
+<h4 class="font-label-md text-label-md text-on-surface">Orçamento Aprovado</h4>
+<p class="font-body-sm text-body-sm text-secondary">16/10/2026 - 14:15 pelo cliente</p>
+</div>
+<!-- Step 4: Em Reparo (Current) -->
+<div class="relative pl-6">
+<div class="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-surface border-2 border-tertiary flex items-center justify-center ring-4 ring-surface z-10">
+<div class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></div>
+</div>
+<!-- Highlight line indicating active path -->
+<div class="absolute left-[-2px] top-[-32px] bottom-0 w-[2px] bg-tertiary -z-10"></div>
+<h4 class="font-label-md text-label-md text-tertiary font-bold">Em Reparo</h4>
+<p class="font-body-sm text-body-sm text-secondary">Iniciado em 16/10/2026 - 15:00</p>
+<div class="mt-3 p-3 bg-tertiary-container/10 border border-tertiary/20 rounded-lg">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Aguardando entrega do módulo sensor térmico (Previsão: 18/10).</p>
+</div>
+</div>
+<!-- Step 5: Concluído -->
+<div class="relative pl-6 opacity-50">
+<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-surface border-2 border-outline-variant flex items-center justify-center ring-4 ring-surface"></div>
+<h4 class="font-label-md text-label-md text-secondary">Concluído</h4>
+<p class="font-body-sm text-body-sm text-secondary">Pendente</p>
+</div>
+</div>
+</div>
+</div>
+<!-- History Log Card -->
+<div class="bg-surface rounded-lg shadow-[0px_1px_3px_rgba(15,23,42,0.08),0px_4px_6px_rgba(15,23,42,0.05)] border border-outline-variant/30 overflow-hidden flex-1">
+<div class="p-6 border-b border-outline-variant/30 bg-surface-container-lowest flex justify-between items-center">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">history</span>
+                                Histórico de Atividades
+                            </h3>
+</div>
+<div class="p-0">
+<ul class="divide-y divide-outline-variant/30">
+<li class="p-4 flex gap-4 hover:bg-surface-container-low transition-colors">
+<div class="mt-1 text-secondary"><span class="material-symbols-outlined text-[20px]">chat</span></div>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface"><span class="font-label-md">Roberto Almeida</span> adicionou um comentário.</p>
+<p class="font-body-sm text-body-sm text-secondary mt-1 italic">"Peça solicitada ao fornecedor XYZ, prazo de 2 dias úteis."</p>
+<p class="font-label-sm text-label-sm text-outline mt-2">Ontem, 16:30</p>
+</div>
+</li>
+<li class="p-4 flex gap-4 hover:bg-surface-container-low transition-colors">
+<div class="mt-1 text-primary"><span class="material-symbols-outlined text-[20px]">check_circle</span></div>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface"><span class="font-label-md">Sistema</span> alterou o status para <span class="font-label-md">Em Reparo</span>.</p>
+<p class="font-label-sm text-label-sm text-outline mt-2">16/10/2026, 15:00</p>
+</div>
+</li>
+<li class="p-4 flex gap-4 hover:bg-surface-container-low transition-colors">
+<div class="mt-1 text-tertiary"><span class="material-symbols-outlined text-[20px]">mark_email_read</span></div>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface">Orçamento aprovado via link externo por <span class="font-label-md">Acme Corporation</span>.</p>
+<p class="font-label-sm text-label-sm text-outline mt-2">16/10/2026, 14:15</p>
+</div>
+</li>
+<li class="p-4 flex gap-4 hover:bg-surface-container-low transition-colors">
+<div class="mt-1 text-secondary"><span class="material-symbols-outlined text-[20px]">mail</span></div>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface"><span class="font-label-md">Roberto Almeida</span> enviou orçamento para aprovação.</p>
+<p class="font-label-sm text-label-sm text-outline mt-2">15/10/2026, 11:45</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="p-4 border-t border-outline-variant/30 bg-surface-container-lowest">
+<div class="relative">
+<input class="w-full pl-4 pr-12 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body-sm text-body-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all" placeholder="Adicionar nota interna..." type="text"/>
+<button class="absolute right-2 top-2 p-1 text-primary hover:bg-primary-container/10 rounded-md transition-colors">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

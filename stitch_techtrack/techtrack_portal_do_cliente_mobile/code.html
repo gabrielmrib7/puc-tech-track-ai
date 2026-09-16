@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Customer Portal - My Order</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-tertiary-fixed-variant": "#004b73",
+                        "tertiary-fixed-dim": "#93ccff",
+                        "surface-container-high": "#e2e7ff",
+                        "surface-container-highest": "#dae2fd",
+                        "surface-tint": "#0053db",
+                        "surface": "#faf8ff",
+                        "on-tertiary-container": "#e7f2ff",
+                        "primary-fixed": "#dbe1ff",
+                        "on-surface": "#131b2e",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#131b2e",
+                        "surface-container": "#eaedff",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#0073ae",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#d5e3fc",
+                        "inverse-surface": "#283044",
+                        "on-primary-container": "#eeefff",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#eef0ff",
+                        "secondary-container": "#d5e3fc",
+                        "surface-bright": "#faf8ff",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#001d31",
+                        "primary": "#004ac6",
+                        "inverse-primary": "#b4c5ff",
+                        "outline-variant": "#c3c6d7",
+                        "primary-container": "#2563eb",
+                        "on-secondary-container": "#57657a",
+                        "tertiary": "#005a89",
+                        "secondary": "#515f74",
+                        "surface-dim": "#d2d9f4",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#737686",
+                        "on-primary-fixed": "#00174b",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed": "#cce5ff",
+                        "surface-variant": "#dae2fd",
+                        "on-surface-variant": "#434655",
+                        "surface-container-low": "#f2f3ff",
+                        "background": "#faf8ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "stack-md": "16px",
+                        "container-max": "1440px",
+                        "unit": "4px",
+                        "stack-xs": "4px",
+                        "margin-desktop": "32px",
+                        "gutter": "24px",
+                        "stack-xl": "48px",
+                        "stack-sm": "8px",
+                        "stack-lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "1", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.25", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .timeline-line {
+            position: absolute;
+            left: 11px;
+            top: 24px;
+            bottom: -24px;
+            width: 2px;
+            background-color: #CBD5E1;
+            z-index: 0;
+        }
+        .timeline-item:last-child .timeline-line {
+            display: none;
+        }
+        .pulse-ring {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen text-on-background font-body-md">
+<!-- Header -->
+<header class="bg-surface sticky top-0 z-50 px-margin-mobile h-16 flex items-center justify-between shadow-[0px_1px_3px_rgba(15,23,42,0.08),0px_4px_6px_rgba(15,23,42,0.05)]">
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">handyman</span>
+<span class="font-headline-md text-headline-md font-extrabold text-primary">TechTrack</span>
+</div>
+<div class="flex items-center gap-stack-sm">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Olá, João!</span>
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center overflow-hidden border border-outline-variant/30">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">person</span>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="p-margin-mobile pb-stack-xl max-w-lg mx-auto">
+<!-- Current Order Card -->
+<section class="bg-surface-container-lowest rounded-lg p-stack-lg shadow-[0px_1px_3px_rgba(15,23,42,0.08),0px_4px_6px_rgba(15,23,42,0.05)] mb-stack-xl relative overflow-hidden">
+<!-- Decorative accent -->
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<div class="flex justify-between items-start mb-stack-md">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-stack-xs">Dell Inspiron 15</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">OS-2026-000123</p>
+</div>
+<div class="bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+<span class="font-label-sm text-label-sm text-primary uppercase">Em reparo</span>
+</div>
+</div>
+<div class="bg-surface-container-low rounded p-stack-md flex items-center gap-stack-md border border-outline-variant/30">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">event</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-1">Previsão de Entrega</p>
+<p class="font-headline-sm text-headline-sm text-on-surface font-semibold">20/08/2026</p>
+</div>
+</div>
+</section>
+<!-- Timeline Section -->
+<section class="bg-surface-container-lowest rounded-lg p-stack-lg shadow-[0px_1px_3px_rgba(15,23,42,0.08),0px_4px_6px_rgba(15,23,42,0.05)]">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-stack-lg border-b border-outline-variant/30 pb-stack-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">history</span>
+                Linha do Tempo
+            </h3>
+<div class="relative pl-2">
+<!-- Timeline Items -->
+<!-- Completed Step 1 -->
+<div class="timeline-item relative pb-stack-lg flex gap-stack-md">
+<div class="timeline-line"></div>
+<div class="relative z-10 w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-sm border-2 border-surface-container-lowest mt-0.5">
+<span class="material-symbols-outlined text-[14px] text-on-primary font-bold">check</span>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface mb-1">Equipamento recebido</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">12/08/2026 - 09:30</p>
+</div>
+</div>
+<!-- Completed Step 2 -->
+<div class="timeline-item relative pb-stack-lg flex gap-stack-md">
+<div class="timeline-line"></div>
+<div class="relative z-10 w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-sm border-2 border-surface-container-lowest mt-0.5">
+<span class="material-symbols-outlined text-[14px] text-on-primary font-bold">check</span>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface mb-1">Diagnóstico realizado</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">13/08/2026 - 14:15</p>
+</div>
+</div>
+<!-- Completed Step 3 -->
+<div class="timeline-item relative pb-stack-lg flex gap-stack-md">
+<div class="timeline-line"></div>
+<div class="relative z-10 w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-sm border-2 border-surface-container-lowest mt-0.5">
+<span class="material-symbols-outlined text-[14px] text-on-primary font-bold">check</span>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface mb-1">Orçamento aprovado</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">14/08/2026 - 10:00</p>
+</div>
+</div>
+<!-- Current Step (Active) -->
+<div class="timeline-item relative pb-stack-lg flex gap-stack-md">
+<div class="timeline-line" style="background-color: #e2e8f0; border-style: dashed; border-width: 0 0 0 2px;"></div>
+<div class="relative z-10 shrink-0 mt-0.5">
+<!-- Outer pulsing ring -->
+<div class="absolute inset-0 bg-primary/20 rounded-full scale-150 pulse-ring"></div>
+<!-- Inner solid dot -->
+<div class="w-6 h-6 rounded-full bg-surface-container-lowest border-2 border-primary flex items-center justify-center relative">
+<div class="w-2.5 h-2.5 rounded-full bg-primary"></div>
+</div>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-primary mb-1">Reparo em andamento</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Substituição de placa mãe</p>
+</div>
+</div>
+<!-- Future Step 1 -->
+<div class="timeline-item relative pb-stack-lg flex gap-stack-md opacity-60">
+<div class="timeline-line" style="background-color: #e2e8f0; border-style: dashed; border-width: 0 0 0 2px;"></div>
+<div class="relative z-10 w-6 h-6 rounded-full bg-surface border-2 border-outline-variant flex items-center justify-center shrink-0 mt-0.5">
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface-variant mb-1">Reparo concluído</p>
+</div>
+</div>
+<!-- Future Step 2 -->
+<div class="timeline-item relative flex gap-stack-md opacity-60">
+<div class="timeline-line" style="background-color: #e2e8f0; border-style: dashed; border-width: 0 0 0 2px;"></div>
+<div class="relative z-10 w-6 h-6 rounded-full bg-surface border-2 border-outline-variant flex items-center justify-center shrink-0 mt-0.5">
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface-variant mb-1">Pronto para retirada</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+</body></html>

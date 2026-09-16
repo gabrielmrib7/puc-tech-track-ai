@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TechTrack Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-tertiary-fixed-variant": "#004b73",
+                        "tertiary-fixed-dim": "#93ccff",
+                        "surface-container-high": "#e2e7ff",
+                        "surface-container-highest": "#dae2fd",
+                        "surface-tint": "#0053db",
+                        "surface": "#faf8ff",
+                        "on-tertiary-container": "#e7f2ff",
+                        "primary-fixed": "#dbe1ff",
+                        "on-surface": "#131b2e",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#131b2e",
+                        "surface-container": "#eaedff",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#0073ae",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#d5e3fc",
+                        "inverse-surface": "#283044",
+                        "on-primary-container": "#eeefff",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#eef0ff",
+                        "secondary-container": "#d5e3fc",
+                        "surface-bright": "#faf8ff",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#001d31",
+                        "primary": "#004ac6",
+                        "inverse-primary": "#b4c5ff",
+                        "outline-variant": "#c3c6d7",
+                        "primary-container": "#2563eb",
+                        "on-secondary-container": "#57657a",
+                        "tertiary": "#005a89",
+                        "secondary": "#515f74",
+                        "surface-dim": "#d2d9f4",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#737686",
+                        "on-primary-fixed": "#00174b",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed": "#cce5ff",
+                        "surface-variant": "#dae2fd",
+                        "on-surface-variant": "#434655",
+                        "surface-container-low": "#f2f3ff",
+                        "background": "#faf8ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "stack-md": "16px",
+                        "container-max": "1440px",
+                        "unit": "4px",
+                        "stack-xs": "4px",
+                        "margin-desktop": "32px",
+                        "gutter": "24px",
+                        "stack-xl": "48px",
+                        "stack-sm": "8px",
+                        "stack-lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "1", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.25", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md h-screen overflow-hidden flex bg-[#F8FAFC]">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-screen w-[280px] bg-surface dark:bg-inverse-surface shadow-[0px_1px_3px_rgba(15,23,42,0.08),0px_4px_6px_rgba(15,23,42,0.05)] flex flex-col h-full border-r border-outline-variant/30 hidden md:flex z-20">
+<div class="p-6">
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-inverse-primary">TechTrack</h1>
+<p class="font-label-md text-label-md text-secondary mt-1">Technical Assistance SaaS</p>
+</div>
+<nav class="flex-1 px-4 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary-container/10 dark:bg-primary-container/20 text-primary dark:text-inverse-primary border-l-4 border-primary font-bold hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-inverse-primary px-4 py-3 hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="handyman">handyman</span>
+<span class="font-label-md text-label-md">Ordens de Serviço</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-inverse-primary px-4 py-3 hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-md text-label-md">Clientes</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-inverse-primary px-4 py-3 hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="precision_manufacturing">precision_manufacturing</span>
+<span class="font-label-md text-label-md">Equipamentos</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-inverse-primary px-4 py-3 hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<div class="p-4 mt-auto border-t border-outline-variant/30">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary hover:text-primary hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-md text-label-md">Help Center</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col md:ml-[280px] h-screen overflow-hidden">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-surface-dim flex justify-between items-center w-full h-16 px-margin-desktop bg-surface dark:bg-surface-dim border-b border-outline-variant/50 z-10 shrink-0">
+<div class="flex items-center gap-4 w-1/3">
+<div class="relative w-full max-w-md hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant/50 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/10 text-body-sm font-body-sm" placeholder="Search..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-full p-2 transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-full p-2 transition-all">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-primary-container overflow-hidden border border-outline-variant/50 ml-2 cursor-pointer">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a person looking directly at the camera. The lighting is soft and flattering, creating a bright, modern corporate aesthetic. The background is a clean, neutral white, typical of high-quality profile photos used in SaaS applications. The person appears approachable yet serious, matching the reliable and competent tone of the technical assistance software." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnX7sToUSZpx5DR3UwBaCZfRxXYT-OgfSF4kVP8K1a3SjUu03W3gAgC11MhnEp3AMsIw04J1NE8Zt7CLWWTov1GqwzPaBC_mIRTO-YQ_vHUORiYjOJKBhGNg8va9A9uiNCcUvZijW0xxy65Z7zDNmZZ9UvQgW56lRqlqZ9491GMbFTszeerQJA303-aDyZPyiGhpx3mf1DhqYXFSbxnMKM68U1OF9wpTl2Rwg9kxoXGMtMNiTVGo6mjg"/>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 overflow-y-auto p-margin-mobile md:p-margin-desktop bg-[#F8FAFC]">
+<div class="max-w-container-max mx-auto">
+<!-- Page Header -->
+<div class="mb-stack-xl">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Overview</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Monitore o status das ordens de serviço e operações da sua assistência.</p>
+</div>
+<!-- Bento Grid for Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-gutter mb-stack-xl">
+<!-- Stat Card 1 -->
+<div class="bg-surface rounded-lg p-stack-lg shadow-[0px_1px_3px_rgba(15,23,42,0.08),0px_4px_6px_rgba(15,23,42,0.05)] flex flex-col justify-between h-full border border-outline-variant/20 hover:-translate-y-1 transition-transform duration-200">
+<div class="flex justify-between items-start mb-4">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total OS</p>
+<span class="material-symbols-outlined text-primary bg-primary-container/10 p-2 rounded-full">receipt_long</span>
+</div>
+<div>
+<p class="font-display-lg text-display-lg text-on-surface">124</p>
+<p class="font-body-sm text-body-sm text-secondary mt-1">+12 this week</p>
+</div>
+</div>
+<!-- Stat Card 2 -->
+<div class="bg-surface rounded-lg p-stack-lg shadow-[0px_1px_3px_rgba(15,23,42,0.08),0px_4px_6px_rgba(15,23,42,0.05)] flex flex-col justify-between h-full border border-outline-variant/20 hover:-translate-y-1 transition-transform duration-200">
+<div class="flex justify-between items-start mb-4">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Em Diagnóstico</p>
+<span class="material-symbols-outlined text-tertiary bg-tertiary-container/10 p-2 rounded-full">search</span>
+</div>
+<div>
+<p class="font-display-lg text-display-lg text-on-surface">18</p>
+</div>
+</div>
+<!-- Stat Card 3 -->
+<div class="bg-surface rounded-lg p-stack-lg shadow-[0px_1px_3px_rgba(15,23,42,0.08),0px_4px_6px_rgba(15,23,42,0.05)] flex flex-col justify-between h-full border border-outline-variant/20 hover:-translate-y-1 transition-transform duration-200">
+<div class="flex justify-between items-start mb-4">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Aguardando Aprovação</p>
+<span class="material-symbols-outlined text-error bg-error-container/30 p-2 rounded-full">pending_actions</span>
+</div>
+<div>
+<p class="font-display-lg text-display-lg text-on-surface">12</p>
+</div>
+</div>
+<!-- Stat Card 4 -->
+<div class="bg-surface rounded-lg p-stack-lg shadow-[0px_1px_3px_rgba(15,23,42,0.08),0px_4px_6px_rgba(15,23,42,0.05)] flex flex-col justify-between h-full border border-outline-variant/20 hover:-translate-y-1 transition-transform duration-200">
+<div class="flex justify-between items-start mb-4">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Em Reparo</p>
+<span class="material-symbols-outlined text-primary bg-primary-container/10 p-2 rounded-full">build</span>
+</div>
+<div>
+<p class="font-display-lg text-display-lg text-on-surface">24</p>
+</div>
+</div>
+<!-- Stat Card 5 -->
+<div class="bg-surface rounded-lg p-stack-lg shadow-[0px_1px_3px_rgba(15,23,42,0.08),0px_4px_6px_rgba(15,23,42,0.05)] flex flex-col justify-between h-full border border-outline-variant/20 hover:-translate-y-1 transition-transform duration-200">
+<div class="flex justify-between items-start mb-4">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Prontos para Retirada</p>
+<span class="material-symbols-outlined text-[#16a34a] bg-[#16a34a]/10 p-2 rounded-full">check_circle</span>
+</div>
+<div>
+<p class="font-display-lg text-display-lg text-on-surface">9</p>
+</div>
+</div>
+</div>
+<!-- Urgent Items Section -->
+<div class="bg-surface rounded-xl shadow-[0px_1px_3px_rgba(15,23,42,0.08),0px_4px_6px_rgba(15,23,42,0.05)] border border-outline-variant/20 overflow-hidden">
+<div class="p-6 border-b border-outline-variant/30 flex justify-between items-center bg-[#F8FAFC]">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">warning</span>
+                                Ordens que precisam de atenção
+                            </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Ações requeridas para não atrasar o fluxo de trabalho.</p>
+</div>
+<button class="font-label-md text-label-md text-primary hover:text-primary-container transition-colors">View All</button>
+</div>
+<div class="flex flex-col">
+<!-- Urgent Item 1 -->
+<div class="p-4 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between border-b border-outline-variant/20 hover:bg-[#F8FAFC] transition-colors gap-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-error-container/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-error">assignment_late</span>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-label-md text-label-md text-on-surface">OS-2023-401</span>
+<span class="px-2 py-0.5 rounded-full bg-error-container/30 text-on-error-container font-label-sm text-[10px] uppercase">Urgente</span>
+</div>
+<p class="font-body-sm text-body-sm text-secondary">Cliente: Empresa Alpha Ltda</p>
+</div>
+</div>
+<div class="flex-1 md:text-right w-full md:w-auto">
+<p class="font-body-md text-body-md text-on-surface">Orçamento pendente há 2 dias</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Aguardando resposta do cliente no WhatsApp.</p>
+</div>
+<div class="shrink-0 mt-2 md:mt-0">
+<button class="px-4 py-2 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors">Action</button>
+</div>
+</div>
+<!-- Urgent Item 2 -->
+<div class="p-4 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between border-b border-outline-variant/20 hover:bg-[#F8FAFC] transition-colors gap-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-error-container/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-error">inventory_2</span>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-label-md text-label-md text-on-surface">OS-2023-389</span>
+<span class="px-2 py-0.5 rounded-full bg-[#f59e0b]/20 text-[#b45309] font-label-sm text-[10px] uppercase">Atenção</span>
+</div>
+<p class="font-body-sm text-body-sm text-secondary">Cliente: João Silva</p>
+</div>
+</div>
+<div class="flex-1 md:text-right w-full md:w-auto">
+<p class="font-body-md text-body-md text-on-surface">Peça em falta no estoque</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Placa mãe modelo X200 solicitada em 12/10.</p>
+</div>
+<div class="shrink-0 mt-2 md:mt-0">
+<button class="px-4 py-2 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors">Action</button>
+</div>
+</div>
+<!-- Urgent Item 3 -->
+<div class="p-4 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between hover:bg-[#F8FAFC] transition-colors gap-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-error-container/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-error">timer</span>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-label-md text-label-md text-on-surface">OS-2023-412</span>
+<span class="px-2 py-0.5 rounded-full bg-error-container/30 text-on-error-container font-label-sm text-[10px] uppercase">Urgente</span>
+</div>
+<p class="font-body-sm text-body-sm text-secondary">Cliente: Maria Oliveira</p>
+</div>
+</div>
+<div class="flex-1 md:text-right w-full md:w-auto">
+<p class="font-body-md text-body-md text-on-surface">Prazo de entrega vence hoje</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Reparo ainda em 80% concluído.</p>
+</div>
+<div class="shrink-0 mt-2 md:mt-0">
+<button class="px-4 py-2 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:bg-primary-container transition-colors shadow-sm">Review</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
