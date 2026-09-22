@@ -1,0 +1,163 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  ADMIN
+  ATTENDANT
+  TECHNICIAN
+  CUSTOMER
+}
+
+enum OrderStatus {
+  RECEIVED
+  WAITING_DIAGNOSIS
+  IN_DIAGNOSIS
+  WAITING_APPROVAL
+  APPROVED
+  REJECTED
+  IN_REPAIR
+  COMPLETED
+  READY_FOR_PICKUP
+  DELIVERED
+  CANCELLED
+}
+
+enum BudgetStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+model User {
+  id            String    @id @default(uuid())
+  clerk_id      String?   @unique
+  name          String
+  email         String    @unique
+  password_hash String?
+  role          UserRole  @default(ATTENDANT)
+  active        Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  customers         Customer[]
+  technician_orders ServiceOrder[]        @relation("TechnicianOrders")
+  history_actions   ServiceOrderHistory[]
+
+  @@map("users")
+}
+
+model Customer {
+  id         String   @id @default(uuid())
+  user_id    String?
+  name       String
+  email      String
+  phone      String
+  document   String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user           User?          @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  equipment      Equipment[]
+  service_orders ServiceOrder[]
+
+  @@index([document])
+  @@index([user_id])
+  @@map("customers")
+}
+
+model Equipment {
+  id               String   @id @default(uuid())
+  customer_id      String
+  type             String
+  brand            String
+  model            String
+  serial_number    String?
+  reported_problem String
+  accessories      String?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  customer       Customer       @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  service_orders ServiceOrder[]
+
+  @@index([customer_id])
+  @@index([serial_number])
+  @@map("equipment")
+}
+
+model ServiceOrder {
+  id                   String        @id @default(uuid())
+  order_number         String        @unique
+  customer_id          String
+  equipment_id         String
+  technician_id        String?
+  status               OrderStatus   @default(RECEIVED)
+  entry_date           DateTime      @default(now())
+  estimated_completion DateTime?
+  diagnosis            String?
+  budget_amount        Decimal?      @db.Decimal(10, 2)
+  budget_description   String?
+  budget_status        BudgetStatus?
+  completed_at         DateTime?
+  delivered_at         DateTime?
+  created_at           DateTime      @default(now())
+  updated_at           DateTime      @updatedAt
+
+  customer   Customer              @relation(fields: [customer_id], references: [id], onDelete: Restrict)
+  equipment  Equipment             @relation(fields: [equipment_id], references: [id], onDelete: Restrict)
+  technician User?                 @relation("TechnicianOrders", fields: [technician_id], references: [id], onDelete: SetNull)
+  budgets    Budget[]
+  history    ServiceOrderHistory[]
+
+  @@index([order_number])
+  @@index([status])
+  @@index([customer_id])
+  @@index([created_at])
+  @@map("service_orders")
+}
+
+model Budget {
+  id               String       @id @default(uuid())
+  service_order_id String
+  amount           Decimal      @db.Decimal(10, 2)
+  description      String
+  status           BudgetStatus @default(PENDING)
+  labor_cost       Decimal?     @db.Decimal(10, 2)
+  parts_cost       Decimal?     @db.Decimal(10, 2)
+  notes            String?
+  created_at       DateTime     @default(now())
+  updated_at       DateTime     @updatedAt
+
+  service_order ServiceOrder @relation(fields: [service_order_id], references: [id], onDelete: Cascade)
+
+  @@index([service_order_id])
+  @@index([status])
+  @@map("budgets")
+}
+
+model ServiceOrderHistory {
+  id               String       @id @default(uuid())
+  service_order_id String
+  user_id          String
+  action           String
+  old_status       OrderStatus?
+  new_status       OrderStatus?
+  description      String?
+  created_at       DateTime     @default(now())
+
+  service_order ServiceOrder @relation(fields: [service_order_id], references: [id], onDelete: Cascade)
+  user          User         @relation(fields: [user_id], references: [id], onDelete: Restrict)
+
+  @@index([service_order_id])
+  @@index([created_at])
+  @@map("service_order_histories")
+}
+
