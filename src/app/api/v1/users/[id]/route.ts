@@ -95,6 +95,33 @@ export async function PATCH(
       select: safeUserSelect,
     });
 
+    if (updated.role === "CUSTOMER") {
+      const existingCustomer = await prisma.customer.findFirst({
+        where: {
+          OR: [
+            { user_id: updated.id },
+            { email: { equals: updated.email, mode: "insensitive" } },
+          ],
+        },
+      });
+
+      if (!existingCustomer) {
+        await prisma.customer.create({
+          data: {
+            name: updated.name,
+            email: updated.email,
+            phone: "Não informado",
+            user_id: updated.id,
+          },
+        });
+      } else if (!existingCustomer.user_id) {
+        await prisma.customer.update({
+          where: { id: existingCustomer.id },
+          data: { user_id: updated.id },
+        });
+      }
+    }
+
     return NextResponse.json(updated);
   } catch (error) {
     console.error("Error in PATCH /api/v1/users/[id]:", error);

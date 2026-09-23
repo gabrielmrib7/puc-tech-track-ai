@@ -61,6 +61,38 @@ export async function GET(request: Request) {
         }
       : {};
 
+    // Auto-sync unlinked users with role CUSTOMER into customers table
+    const unlinkedUsers = await prisma.user.findMany({
+      where: {
+        role: "CUSTOMER",
+        customers: { none: {} },
+      },
+      select: { id: true, name: true, email: true },
+    });
+
+    for (const u of unlinkedUsers) {
+      const existingByEmail = await prisma.customer.findFirst({
+        where: { email: { equals: u.email, mode: "insensitive" } },
+      });
+      if (existingByEmail) {
+        if (!existingByEmail.user_id) {
+          await prisma.customer.update({
+            where: { id: existingByEmail.id },
+            data: { user_id: u.id },
+          });
+        }
+      } else {
+        await prisma.customer.create({
+          data: {
+            name: u.name,
+            email: u.email,
+            phone: "Não informado",
+            user_id: u.id,
+          },
+        });
+      }
+    }
+
     const [items, total] = await prisma.$transaction([
       prisma.customer.findMany({
         where,
