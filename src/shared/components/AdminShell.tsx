@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
 import {
   Bell,
@@ -34,6 +35,7 @@ export function AdminShell({
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useUser();
+  const pathname = usePathname();
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#131b2e]">
@@ -74,7 +76,13 @@ export function AdminShell({
 
         <nav className="flex-1 space-y-1.5 overflow-y-auto px-4 py-6">
           {navigation.map(({ href, label, icon: Icon }) => {
-            const selected = active === label;
+            const selected = active
+              ? active === label
+              : pathname
+              ? href === ROUTES.admin.dashboard
+                ? pathname === "/admin/dashboard" || pathname === "/dashboard"
+                : pathname.startsWith(href)
+              : false;
             return (
               <Link
                 key={label}

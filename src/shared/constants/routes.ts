@@ -11,7 +11,7 @@ export const ROUTES = {
 
   // Administrative & Staff Areas
   admin: {
-    dashboard: "/dashboard",
+    dashboard: "/admin/dashboard",
     orders: "/service-orders",
     newOrder: "/service-orders/new",
     orderDetail: (id: string) => `/service-orders/${id}`,
