@@ -5,16 +5,25 @@ const isProtectedRoute = createRouteMatcher([
   "/admin(.*)",
   "/attendant(.*)",
   "/technician(.*)",
+  "/dashboard(.*)",
+  "/service-orders(.*)",
   "/portal(.*)",
+  "/orders(.*)",
   "/api/v1(.*)",
 ]);
 
-const isPublicRoute = createRouteMatcher(["/login(.*)", "/"]);
+const isPublicRoute = createRouteMatcher([
+  "/login(.*)",
+  "/",
+  "/api/webhooks(.*)",
+]);
 
 export default clerkMiddleware((auth, request) => {
   if (isProtectedRoute(request) && !isPublicRoute(request)) {
     if (request.nextUrl.pathname.startsWith("/api/")) {
-      auth().protect();
+      if (!auth().userId) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
     } else if (!auth().userId) {
       return NextResponse.redirect(new URL("/login", request.url));
     }

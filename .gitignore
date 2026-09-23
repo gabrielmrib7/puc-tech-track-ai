@@ -39,3 +39,6 @@ Thumbs.db
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+*.tsbuildinfo
+playwright/.auth/

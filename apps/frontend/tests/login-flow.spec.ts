@@ -79,7 +79,7 @@ test.describe('TechTrack auth flow', () => {
     await page.goto('/portal');
 
     await expect(page).toHaveURL(/\/login(?:$|\?)/i, { timeout: 15000 });
-    await expect(page).not.toContainText('Acompanhe seus reparos');
+    await expect(page.locator('body')).not.toContainText('Acompanhe seus reparos');
   });
 
   test('AUTH-003: protected API endpoints reject requests without a Clerk session', async ({ request }) => {
@@ -94,12 +94,23 @@ test.describe('TechTrack auth flow', () => {
     await page.goto('/login');
     await expect(page).toHaveURL(/\/login(?:$|\?)/i);
 
-    await page.locator('input[name="identifier"], input[name="emailAddress"]').fill('invalid-user@example.com');
-    await page.locator('input[name="password"]').fill('WrongPassword123!');
-    await page.locator('button[type="submit"]').click();
+    const identifierInput = page.locator('input[name="identifier"], input[name="emailAddress"]').first();
+    await identifierInput.waitFor({ state: 'visible', timeout: 15000 });
+    await identifierInput.fill('invalid-user@example.com');
+
+    const submitBtn = page.locator('button.cl-formButtonPrimary, button[type="submit"]:visible').first();
+    if (await submitBtn.isVisible()) {
+      await submitBtn.click();
+    }
+
+    const passwordInput = page.locator('input[name="password"]').first();
+    if (await passwordInput.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await passwordInput.fill('WrongPassword123!');
+      await page.locator('button.cl-formButtonPrimary, button[type="submit"]:visible').first().click();
+    }
 
     await expect(page).toHaveURL(/\/login(?:$|\?)/i, { timeout: 20000 });
-    await expect(page.locator('text=/invalid|incorrect|not found|error/i')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('text=/invalid|incorrect|not found|couldn\'t find|error/i').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('AUTH-004: customer login redirects to the portal', async ({ page }) => {
