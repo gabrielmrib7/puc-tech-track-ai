@@ -16,7 +16,7 @@
   <a href="#-arquitetura-e-modelo-de-dados">Arquitetura</a> •
   <a href="#-stack-tecnológica">Stack</a> •
   <a href="#-como-executar-o-projeto">Como Executar</a> •
-  <a href="#-contas-padrão-e-credenciais-de-acesso-ambiente-de-teste--avaliação">Contas Padrão</a> •
+  <a href="#-conta-admin-padrão-e-credenciais-de-acesso-ambiente-de-teste--avaliação">Conta Admin Padrão</a> •
   <a href="#-variáveis-de-ambiente">Configuração</a> •
   <a href="#-endpoints-da-api">API</a> •
   <a href="#-contribuição">Contribuição</a>
@@ -310,18 +310,16 @@ Acesse a aplicação no navegador em:
 - **Frontend / Portal:** [http://localhost:3000](http://localhost:3000)
 - **API Endpoint:** [http://localhost:3000/api/v1](http://localhost:3000/api/v1)
 
-### 6. Contas Padrão e Credenciais de Acesso (Ambiente de Teste / Avaliação)
+### 6. Conta Admin Padrão e Credenciais de Acesso (Ambiente de Teste / Avaliação)
 
-Para testar todos os perfis e fluxos operacionais, utilize as credenciais padrão pré-configuradas no Clerk (modo de desenvolvimento):
+Para testar a aplicação com privilégios totais de administrador, utilize a credencial padrão pré-configurada no Clerk (modo de desenvolvimento):
 
 | Perfil / Papel | E-mail de Acesso | Método de Login | Código Padrão de Verificação (OTP) | Acesso e Telas |
 | :--- | :--- | :--- | :---: | :--- |
 | 👑 **Administrador Padrão (`ADMIN`)** | `admin+clerk_test@techtrack.com` | E-mail + OTP | **`424242`** | Painel Completo (`/service-orders`, `/admin/*`) |
-| 👑 **Administrador Alternativo** | `admin@techtrack.com` | E-mail + OTP | **`424242`** | Painel Completo (Auto-promovido a `ADMIN`) |
-| 📱 **Cliente Padrão (`CUSTOMER`)** | `mirandaagaamer@gmail.com` | E-mail + OTP | **`424242`** | Portal do Cliente (`/portal`, `/orders/[id]/budget`) |
 
 > [!TIP]
-> **Código Padrão do Clerk (`424242`):** No ambiente de desenvolvimento do Clerk, qualquer conta de teste ou e-mail com sufixo `+clerk_test` utiliza o código padrão **`424242`** para verificação instantânea sem necessidade de envio ou recebimento de e-mail real.
+> **Código Padrão do Clerk (`424242`):** No ambiente de desenvolvimento do Clerk, o e-mail de teste `admin+clerk_test@techtrack.com` utiliza o código padrão **`424242`** para verificação instantânea sem necessidade de envio ou recebimento de e-mail real.
 
 ---
 
