@@ -63,7 +63,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Equipamento não encontrado" }, { status: 404 });
     }
 
-    const { customerId, serialNumber, ...rest } = parsed.data;
+    const { customerId, serialNumber, reportedProblem, ...rest } = parsed.data;
 
     if (customerId) {
       const customerExists = await prisma.customer.findUnique({
@@ -99,6 +99,7 @@ export async function PATCH(
         ...rest,
         ...(customerId ? { customer_id: customerId } : {}),
         ...(serialNumber !== undefined ? { serial_number: serialNumber } : {}),
+        ...(reportedProblem !== undefined ? { reported_problem: reportedProblem } : {}),
       },
     });
 
