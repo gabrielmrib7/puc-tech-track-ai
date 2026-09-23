@@ -8,7 +8,14 @@ import {
 } from "./state-machine";
 
 describe("service order state machine", () => {
-  it.each([["RECEIVED", "WAITING_DIAGNOSIS"], ["WAITING_DIAGNOSIS", "IN_DIAGNOSIS"], ["IN_REPAIR", "COMPLETED"], ["READY_FOR_PICKUP", "DELIVERED"]] as const)("allows %s to %s", (from, to) => {
+  it.each([
+    ["RECEIVED", "WAITING_DIAGNOSIS"],
+    ["WAITING_DIAGNOSIS", "IN_DIAGNOSIS"],
+    ["WAITING_APPROVAL", "IN_REPAIR"],
+    ["WAITING_APPROVAL", "APPROVED"],
+    ["IN_REPAIR", "COMPLETED"],
+    ["READY_FOR_PICKUP", "DELIVERED"],
+  ] as const)("allows %s to %s", (from, to) => {
     expect(canTransition(from, to)).toBe(true);
   });
 

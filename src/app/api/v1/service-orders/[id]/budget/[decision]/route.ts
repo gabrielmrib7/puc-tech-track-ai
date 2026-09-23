@@ -91,6 +91,7 @@ export async function POST(
 
     return NextResponse.json(result);
   } catch (error) {
+    console.error("Budget decision error:", error);
     if (error instanceof Error && error.message === "NOT_FOUND") {
       return NextResponse.json({ error: "Ordem de serviço não encontrada" }, { status: 404 });
     }
@@ -100,6 +101,7 @@ export async function POST(
         { status: 409 }
       );
     }
-    return NextResponse.json({ error: "Não foi possível registrar a decisão do orçamento" }, { status: 422 });
+    const message = error instanceof Error ? error.message : "Não foi possível registrar a decisão do orçamento";
+    return NextResponse.json({ error: "Não foi possível registrar a decisão do orçamento", details: message }, { status: 422 });
   }
 }
