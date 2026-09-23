@@ -13,6 +13,7 @@ import {
   Search,
   Settings,
   Users,
+  UserCog,
   Wrench,
   X,
 } from "lucide-react";
@@ -23,6 +24,7 @@ const navigation = [
   { href: ROUTES.admin.orders, label: "Ordens de Serviço", icon: Wrench },
   { href: ROUTES.admin.customers, label: "Clientes", icon: Users },
   { href: ROUTES.admin.equipment, label: "Equipamentos", icon: Boxes },
+  { href: ROUTES.admin.users, label: "Usuários", icon: UserCog },
   { href: ROUTES.admin.settings, label: "Configurações", icon: Settings },
 ];
 

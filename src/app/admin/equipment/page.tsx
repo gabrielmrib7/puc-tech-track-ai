@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { Plus, Boxes, Laptop, Search, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Plus, Boxes, Laptop, Search, AlertTriangle, CheckCircle2, Pencil, Trash2 } from "lucide-react";
 import { AdminShell } from "@/shared/components/AdminShell";
 import { LoadingState } from "@/shared/components/LoadingState";
 import { ErrorState } from "@/shared/components/ErrorState";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { SubmitButton } from "@/shared/components/SubmitButton";
-import { apiGet, apiPost } from "@/shared/lib/api-client";
+import { apiGet, apiPost, apiPatch, apiDelete } from "@/shared/lib/api-client";
 import { ROUTES } from "@/shared/constants/routes";
 import { formatLocalDate } from "@/shared/utils/formatters";
 import type { Customer, Equipment, PaginatedResponse } from "@/shared/types/api";
@@ -29,13 +29,29 @@ export default function EquipmentPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Form Fields
+  // Form Fields (Create)
   const [type, setType] = useState("Notebook");
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
   const [serialNumber, setSerialNumber] = useState("");
   const [reportedProblem, setReportedProblem] = useState("");
   const [accessories, setAccessories] = useState("");
+
+  // Edit Equipment Modal State
+  const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
+  const [editType, setEditType] = useState("Notebook");
+  const [editBrand, setEditBrand] = useState("");
+  const [editModel, setEditModel] = useState("");
+  const [editSerialNumber, setEditSerialNumber] = useState("");
+  const [editReportedProblem, setEditReportedProblem] = useState("");
+  const [editAccessories, setEditAccessories] = useState("");
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false);
+  const [editFormError, setEditFormError] = useState<string | null>(null);
+
+  // Delete Equipment State
+  const [deletingEquipment, setDeletingEquipment] = useState<Equipment | null>(null);
+  const [isDeleteSubmitting, setIsDeleteSubmitting] = useState(false);
+  const [deleteFormError, setDeleteFormError] = useState<string | null>(null);
 
   // Fetch Customers for selector
   const fetchCustomers = useCallback(async (query = "") => {
@@ -128,6 +144,72 @@ export default function EquipmentPage() {
     fetchEquipment(selectedCustomerId);
   };
 
+  const handleOpenEdit = (eq: Equipment) => {
+    setEditingEquipment(eq);
+    setEditType(eq.type);
+    setEditBrand(eq.brand);
+    setEditModel(eq.model);
+    setEditSerialNumber(eq.serial_number || "");
+    setEditReportedProblem(eq.reported_problem);
+    setEditAccessories(eq.accessories || "");
+    setEditFormError(null);
+  };
+
+  const handleUpdateEquipment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEquipment) return;
+
+    setIsEditSubmitting(true);
+    setEditFormError(null);
+
+    const payload = {
+      type: editType.trim(),
+      brand: editBrand.trim(),
+      model: editModel.trim(),
+      serialNumber: editSerialNumber.trim() ? editSerialNumber.trim().toUpperCase() : undefined,
+      reportedProblem: editReportedProblem.trim(),
+      accessories: editAccessories.trim() ? editAccessories.trim() : undefined,
+    };
+
+    const res = await apiPatch<Equipment>(ROUTES.api.equipmentDetail(editingEquipment.id), payload);
+
+    if (!res.ok) {
+      setEditFormError(res.error);
+      setIsEditSubmitting(false);
+      return;
+    }
+
+    setSuccessMessage(`Equipamento "${res.data.brand} ${res.data.model}" atualizado com sucesso!`);
+    setIsEditSubmitting(false);
+    setEditingEquipment(null);
+    fetchEquipment(selectedCustomerId);
+  };
+
+  const handleOpenDelete = (eq: Equipment) => {
+    setDeletingEquipment(eq);
+    setDeleteFormError(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingEquipment) return;
+
+    setIsDeleteSubmitting(true);
+    setDeleteFormError(null);
+
+    const res = await apiDelete(ROUTES.api.equipmentDetail(deletingEquipment.id));
+
+    if (!res.ok) {
+      setDeleteFormError(res.error);
+      setIsDeleteSubmitting(false);
+      return;
+    }
+
+    setSuccessMessage(`Equipamento "${deletingEquipment.brand} ${deletingEquipment.model}" removido com sucesso.`);
+    setIsDeleteSubmitting(false);
+    setDeletingEquipment(null);
+    fetchEquipment(selectedCustomerId);
+  };
+
   const selectedCustomer = customers.find((c) => c.id === selectedCustomerId);
 
   return (
@@ -156,9 +238,18 @@ export default function EquipmentPage() {
 
       {/* Success Notification */}
       {successMessage && (
-        <div className="mb-6 flex items-center gap-2.5 rounded-xl border border-[#08783d]/20 bg-[#c9f5dc]/30 p-4 text-sm font-medium text-[#08783d]">
-          <CheckCircle2 size={18} />
-          <span>{successMessage}</span>
+        <div className="mb-6 flex items-center justify-between rounded-xl border border-[#08783d]/20 bg-[#c9f5dc]/30 p-4 text-sm font-medium text-[#08783d]">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 size={18} />
+            <span>{successMessage}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSuccessMessage(null)}
+            className="text-xs font-semibold underline hover:no-underline"
+          >
+            Fechar
+          </button>
         </div>
       )}
 
@@ -222,7 +313,7 @@ export default function EquipmentPage() {
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[700px] text-left text-sm">
+            <table className="w-full min-w-[750px] text-left text-sm">
               <thead className="border-b border-[#c3c6d7]/30 bg-[#f2f3ff] text-[11px] font-bold uppercase tracking-wider text-[#434655]">
                 <tr>
                   <th className="px-5 py-3.5">Tipo</th>
@@ -231,6 +322,7 @@ export default function EquipmentPage() {
                   <th className="px-5 py-3.5">Problema Relatado</th>
                   <th className="px-5 py-3.5">Acessórios</th>
                   <th className="px-5 py-3.5">Cadastrado em</th>
+                  <th className="px-5 py-3.5 text-right">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#c3c6d7]/20">
@@ -251,6 +343,28 @@ export default function EquipmentPage() {
                     </td>
                     <td className="px-5 py-4 text-xs text-[#515f74]">
                       {formatLocalDate(eq.created_at)}
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(eq)}
+                          aria-label={`Editar equipamento ${eq.brand} ${eq.model}`}
+                          className="inline-flex items-center gap-1 rounded-lg border border-[#c3c6d7] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#004ac6] hover:bg-[#f2f3ff]"
+                        >
+                          <Pencil size={13} />
+                          <span>Editar</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDelete(eq)}
+                          aria-label={`Excluir equipamento ${eq.brand} ${eq.model}`}
+                          className="inline-flex items-center gap-1 rounded-lg border border-[#ffdad6] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#ba1a1a] hover:bg-[#ffdad6]/20"
+                        >
+                          <Trash2 size={13} />
+                          <span>Excluir</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -380,6 +494,174 @@ export default function EquipmentPage() {
                 </SubmitButton>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Edit Equipment */}
+      {editingEquipment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border border-[#c3c6d7]/40 bg-white p-6 shadow-xl">
+            <div className="flex items-center gap-3 border-b border-[#c3c6d7]/30 pb-4">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#2563eb]/10 text-[#004ac6]">
+                <Pencil size={20} />
+              </span>
+              <div>
+                <h3 className="text-lg font-bold text-[#131b2e]">Editar Equipamento</h3>
+                <p className="text-xs text-[#515f74]">
+                  Atualize os dados técnicos e defeitos do aparelho.
+                </p>
+              </div>
+            </div>
+
+            {editFormError && (
+              <div className="mt-4 rounded-lg bg-[#ffdad6]/40 p-3 text-xs font-semibold text-[#ba1a1a]">
+                {editFormError}
+              </div>
+            )}
+
+            <form onSubmit={handleUpdateEquipment} className="mt-5 space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-bold text-[#434655]">Tipo do Aparelho *</label>
+                  <select
+                    value={editType}
+                    onChange={(e) => setEditType(e.target.value)}
+                    className="mt-1 h-10 w-full rounded-lg border border-[#c3c6d7] bg-white px-3 text-sm text-[#131b2e] outline-none focus:border-[#004ac6]"
+                  >
+                    <option value="Notebook">Notebook</option>
+                    <option value="Desktop">Desktop / PC</option>
+                    <option value="Smartphone">Smartphone</option>
+                    <option value="Tablet">Tablet</option>
+                    <option value="Servidor">Servidor</option>
+                    <option value="Outro">Outro</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#434655]">Marca *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editBrand}
+                    onChange={(e) => setEditBrand(e.target.value)}
+                    className="mt-1 h-10 w-full rounded-lg border border-[#c3c6d7] px-3 text-sm text-[#131b2e] outline-none focus:border-[#004ac6]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-bold text-[#434655]">Modelo *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editModel}
+                    onChange={(e) => setEditModel(e.target.value)}
+                    className="mt-1 h-10 w-full rounded-lg border border-[#c3c6d7] px-3 text-sm text-[#131b2e] outline-none focus:border-[#004ac6]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#434655]">
+                    Número de Série (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={editSerialNumber}
+                    onChange={(e) => setEditSerialNumber(e.target.value)}
+                    className="mt-1 h-10 w-full rounded-lg border border-[#c3c6d7] px-3 text-sm font-mono text-[#131b2e] outline-none focus:border-[#004ac6]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#434655]">
+                  Defeito / Problema Relatado *
+                </label>
+                <textarea
+                  required
+                  rows={3}
+                  value={editReportedProblem}
+                  onChange={(e) => setEditReportedProblem(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-[#c3c6d7] p-3 text-sm text-[#131b2e] outline-none focus:border-[#004ac6]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#434655]">
+                  Acessórios Entregues (Opcional)
+                </label>
+                <input
+                  type="text"
+                  value={editAccessories}
+                  onChange={(e) => setEditAccessories(e.target.value)}
+                  className="mt-1 h-10 w-full rounded-lg border border-[#c3c6d7] px-3 text-sm text-[#131b2e] outline-none focus:border-[#004ac6]"
+                />
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3 border-t border-[#c3c6d7]/30 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingEquipment(null)}
+                  className="rounded-lg border border-[#c3c6d7] px-4 py-2 text-sm font-semibold text-[#515f74] hover:bg-[#f2f3ff]"
+                >
+                  Cancelar
+                </button>
+                <SubmitButton isLoading={isEditSubmitting} loadingText="Salvando...">
+                  Atualizar Equipamento
+                </SubmitButton>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Delete Confirmation */}
+      {deletingEquipment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-[#ffdad6] bg-white p-6 shadow-xl">
+            <div className="flex items-center gap-3 border-b border-[#ffdad6] pb-4">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#ffdad6] text-[#ba1a1a]">
+                <AlertTriangle size={20} />
+              </span>
+              <div>
+                <h3 className="text-lg font-bold text-[#ba1a1a]">Confirmar Exclusão</h3>
+                <p className="text-xs text-[#515f74]">Esta ação requer verificação de segurança.</p>
+              </div>
+            </div>
+
+            {deleteFormError ? (
+              <div className="mt-4 rounded-lg bg-[#ffdad6]/40 p-3 text-xs font-semibold text-[#ba1a1a]">
+                {deleteFormError}
+              </div>
+            ) : (
+              <p className="mt-4 text-sm text-[#434655]">
+                Deseja realmente remover o equipamento{" "}
+                <strong className="text-[#131b2e]">
+                  {deletingEquipment.brand} {deletingEquipment.model}
+                </strong>
+                ? Equipamentos com histórico de ordens de serviço não podem ser excluídos.
+              </p>
+            )}
+
+            <div className="mt-6 flex justify-end gap-3 border-t border-[#c3c6d7]/30 pt-4">
+              <button
+                type="button"
+                onClick={() => setDeletingEquipment(null)}
+                className="rounded-lg border border-[#c3c6d7] px-4 py-2 text-sm font-semibold text-[#515f74] hover:bg-[#f2f3ff]"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={isDeleteSubmitting}
+                onClick={handleConfirmDelete}
+                className="inline-flex items-center justify-center rounded-lg bg-[#ba1a1a] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#93000a] disabled:opacity-50"
+              >
+                {isDeleteSubmitting ? "Excluindo..." : "Confirmar Exclusão"}
+              </button>
+            </div>
           </div>
         </div>
       )}

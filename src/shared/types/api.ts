@@ -33,6 +33,11 @@ export interface PaginatedResponse<T> {
 }
 
 /**
+ * Safe User Response DTO (excluding secrets)
+ */
+export type UserResponse = Omit<User, "password_hash">;
+
+/**
  * Dashboard Metrics Response
  */
 export interface AdminDashboardResponse {
@@ -51,6 +56,29 @@ export interface EnrichedHistoryItem extends ServiceOrderHistory {
     name: string;
     role: string;
   } | null;
+}
+
+/**
+ * Enriched Customer Detail with Relations
+ */
+export interface CustomerWithRelations extends Customer {
+  equipment?: Equipment[];
+  service_orders?: ServiceOrder[];
+  _count?: {
+    equipment: number;
+    service_orders: number;
+  };
+}
+
+/**
+ * Enriched Equipment Detail with Relations
+ */
+export interface EquipmentWithRelations extends Equipment {
+  customer?: Customer;
+  service_orders?: ServiceOrder[];
+  _count?: {
+    service_orders: number;
+  };
 }
 
 /**

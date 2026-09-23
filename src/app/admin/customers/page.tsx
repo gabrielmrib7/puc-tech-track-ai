@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { Plus, Search, UserPlus, Mail, Phone, FileText, CheckCircle2 } from "lucide-react";
+import { Plus, Search, UserPlus, Mail, Phone, FileText, CheckCircle2, Pencil, Trash2, AlertTriangle } from "lucide-react";
 import { AdminShell } from "@/shared/components/AdminShell";
 import { LoadingState, SkeletonRow } from "@/shared/components/LoadingState";
 import { ErrorState } from "@/shared/components/ErrorState";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { SubmitButton } from "@/shared/components/SubmitButton";
-import { apiGet, apiPost } from "@/shared/lib/api-client";
+import { apiGet, apiPost, apiPatch, apiDelete } from "@/shared/lib/api-client";
 import { ROUTES } from "@/shared/constants/routes";
 import { formatLocalDate } from "@/shared/utils/formatters";
 import type { Customer, PaginatedResponse } from "@/shared/types/api";
@@ -26,11 +26,25 @@ export default function CustomersPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Form Fields
+  // Form Fields (Create)
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [document, setDocument] = useState("");
+
+  // Edit Customer Modal State
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editDocument, setEditDocument] = useState("");
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false);
+  const [editFormError, setEditFormError] = useState<string | null>(null);
+
+  // Delete Customer State
+  const [deletingCustomer, setDeletingCustomer] = useState<Customer | null>(null);
+  const [isDeleteSubmitting, setIsDeleteSubmitting] = useState(false);
+  const [deleteFormError, setDeleteFormError] = useState<string | null>(null);
 
   const fetchCustomers = useCallback(async () => {
     setIsLoading(true);
@@ -100,6 +114,68 @@ export default function CustomersPage() {
     fetchCustomers();
   };
 
+  const handleOpenEdit = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setEditName(customer.name);
+    setEditEmail(customer.email);
+    setEditPhone(customer.phone);
+    setEditDocument(customer.document || "");
+    setEditFormError(null);
+  };
+
+  const handleUpdateCustomer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCustomer) return;
+
+    setIsEditSubmitting(true);
+    setEditFormError(null);
+
+    const payload = {
+      name: editName.trim(),
+      email: editEmail.trim(),
+      phone: editPhone.trim(),
+      document: editDocument.trim() ? editDocument.trim() : undefined,
+    };
+
+    const res = await apiPatch<Customer>(ROUTES.api.customerDetail(editingCustomer.id), payload);
+
+    if (!res.ok) {
+      setEditFormError(res.error);
+      setIsEditSubmitting(false);
+      return;
+    }
+
+    setSuccessMessage(`Cliente "${res.data.name}" atualizado com sucesso!`);
+    setIsEditSubmitting(false);
+    setEditingCustomer(null);
+    fetchCustomers();
+  };
+
+  const handleOpenDelete = (customer: Customer) => {
+    setDeletingCustomer(customer);
+    setDeleteFormError(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingCustomer) return;
+
+    setIsDeleteSubmitting(true);
+    setDeleteFormError(null);
+
+    const res = await apiDelete(ROUTES.api.customerDetail(deletingCustomer.id));
+
+    if (!res.ok) {
+      setDeleteFormError(res.error);
+      setIsDeleteSubmitting(false);
+      return;
+    }
+
+    setSuccessMessage(`Cliente "${deletingCustomer.name}" removido com sucesso.`);
+    setIsDeleteSubmitting(false);
+    setDeletingCustomer(null);
+    fetchCustomers();
+  };
+
   const totalPages = data ? Math.ceil(data.total / data.limit) : 1;
 
   return (
@@ -127,9 +203,18 @@ export default function CustomersPage() {
 
       {/* Success Notification */}
       {successMessage && (
-        <div className="mb-6 flex items-center gap-2.5 rounded-xl border border-[#08783d]/20 bg-[#c9f5dc]/30 p-4 text-sm font-medium text-[#08783d]">
-          <CheckCircle2 size={18} />
-          <span>{successMessage}</span>
+        <div className="mb-6 flex items-center justify-between rounded-xl border border-[#08783d]/20 bg-[#c9f5dc]/30 p-4 text-sm font-medium text-[#08783d]">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 size={18} />
+            <span>{successMessage}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSuccessMessage(null)}
+            className="text-xs font-semibold underline hover:no-underline"
+          >
+            Fechar
+          </button>
         </div>
       )}
 
@@ -183,7 +268,7 @@ export default function CustomersPage() {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[700px] text-left text-sm">
+              <table className="w-full min-w-[750px] text-left text-sm">
                 <thead className="border-b border-[#c3c6d7]/30 bg-[#f2f3ff] text-[11px] font-bold uppercase tracking-wider text-[#434655]">
                   <tr>
                     <th className="px-5 py-3.5">Nome do Cliente</th>
@@ -191,18 +276,19 @@ export default function CustomersPage() {
                     <th className="px-5 py-3.5">Telefone</th>
                     <th className="px-5 py-3.5">Documento</th>
                     <th className="px-5 py-3.5">Cadastrado em</th>
+                    <th className="px-5 py-3.5 text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#c3c6d7]/20">
                   {isLoading ? (
                     <>
-                      <SkeletonRow cols={5} />
-                      <SkeletonRow cols={5} />
-                      <SkeletonRow cols={5} />
+                      <SkeletonRow cols={6} />
+                      <SkeletonRow cols={6} />
+                      <SkeletonRow cols={6} />
                     </>
                   ) : !data || data.items.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="p-8">
+                      <td colSpan={6} className="p-8">
                         <EmptyState
                           title="Nenhum cliente cadastrado"
                           description={
@@ -251,6 +337,28 @@ export default function CustomersPage() {
                         </td>
                         <td className="px-5 py-4 text-xs text-[#515f74]">
                           {formatLocalDate(customer.created_at)}
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEdit(customer)}
+                              aria-label={`Editar cliente ${customer.name}`}
+                              className="inline-flex items-center gap-1 rounded-lg border border-[#c3c6d7] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#004ac6] hover:bg-[#f2f3ff]"
+                            >
+                              <Pencil size={13} />
+                              <span>Editar</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenDelete(customer)}
+                              aria-label={`Excluir cliente ${customer.name}`}
+                              className="inline-flex items-center gap-1 rounded-lg border border-[#ffdad6] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#ba1a1a] hover:bg-[#ffdad6]/20"
+                            >
+                              <Trash2 size={13} />
+                              <span>Excluir</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -383,6 +491,141 @@ export default function CustomersPage() {
                 </SubmitButton>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Edit Customer */}
+      {editingCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border border-[#c3c6d7]/40 bg-white p-6 shadow-xl">
+            <div className="flex items-center gap-3 border-b border-[#c3c6d7]/30 pb-4">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#2563eb]/10 text-[#004ac6]">
+                <Pencil size={20} />
+              </span>
+              <div>
+                <h3 className="text-lg font-bold text-[#131b2e]">Editar Cliente</h3>
+                <p className="text-xs text-[#515f74]">
+                  Atualize as informações cadastrais do cliente.
+                </p>
+              </div>
+            </div>
+
+            {editFormError && (
+              <div className="mt-4 rounded-lg bg-[#ffdad6]/40 p-3 text-xs font-semibold text-[#ba1a1a]">
+                {editFormError}
+              </div>
+            )}
+
+            <form onSubmit={handleUpdateCustomer} className="mt-5 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-[#434655]">Nome Completo *</label>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="mt-1 h-10 w-full rounded-lg border border-[#c3c6d7] px-3 text-sm text-[#131b2e] outline-none focus:border-[#004ac6]"
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-bold text-[#434655]">E-mail *</label>
+                  <input
+                    type="email"
+                    required
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    className="mt-1 h-10 w-full rounded-lg border border-[#c3c6d7] px-3 text-sm text-[#131b2e] outline-none focus:border-[#004ac6]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#434655]">Telefone / WhatsApp *</label>
+                  <input
+                    type="tel"
+                    required
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    className="mt-1 h-10 w-full rounded-lg border border-[#c3c6d7] px-3 text-sm text-[#131b2e] outline-none focus:border-[#004ac6]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#434655]">
+                  CPF / CNPJ (Opcional)
+                </label>
+                <input
+                  type="text"
+                  value={editDocument}
+                  onChange={(e) => setEditDocument(e.target.value)}
+                  placeholder="000.000.000-00"
+                  className="mt-1 h-10 w-full rounded-lg border border-[#c3c6d7] px-3 text-sm text-[#131b2e] outline-none focus:border-[#004ac6]"
+                />
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3 border-t border-[#c3c6d7]/30 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingCustomer(null)}
+                  className="rounded-lg border border-[#c3c6d7] px-4 py-2 text-sm font-semibold text-[#515f74] hover:bg-[#f2f3ff]"
+                >
+                  Cancelar
+                </button>
+                <SubmitButton isLoading={isEditSubmitting} loadingText="Salvando...">
+                  Atualizar Dados
+                </SubmitButton>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Delete Confirmation */}
+      {deletingCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-[#ffdad6] bg-white p-6 shadow-xl">
+            <div className="flex items-center gap-3 border-b border-[#ffdad6] pb-4">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#ffdad6] text-[#ba1a1a]">
+                <AlertTriangle size={20} />
+              </span>
+              <div>
+                <h3 className="text-lg font-bold text-[#ba1a1a]">Confirmar Exclusão</h3>
+                <p className="text-xs text-[#515f74]">Esta ação requer verificação de segurança.</p>
+              </div>
+            </div>
+
+            {deleteFormError ? (
+              <div className="mt-4 rounded-lg bg-[#ffdad6]/40 p-3 text-xs font-semibold text-[#ba1a1a]">
+                {deleteFormError}
+              </div>
+            ) : (
+              <p className="mt-4 text-sm text-[#434655]">
+                Deseja realmente remover o cliente{" "}
+                <strong className="text-[#131b2e]">{deletingCustomer.name}</strong>?
+                Clientes com ordens de serviço ativas ou concluídas não podem ser excluídos.
+              </p>
+            )}
+
+            <div className="mt-6 flex justify-end gap-3 border-t border-[#c3c6d7]/30 pt-4">
+              <button
+                type="button"
+                onClick={() => setDeletingCustomer(null)}
+                className="rounded-lg border border-[#c3c6d7] px-4 py-2 text-sm font-semibold text-[#515f74] hover:bg-[#f2f3ff]"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={isDeleteSubmitting}
+                onClick={handleConfirmDelete}
+                className="inline-flex items-center justify-center rounded-lg bg-[#ba1a1a] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#93000a] disabled:opacity-50"
+              >
+                {isDeleteSubmitting ? "Excluindo..." : "Confirmar Exclusão"}
+              </button>
+            </div>
           </div>
         </div>
       )}

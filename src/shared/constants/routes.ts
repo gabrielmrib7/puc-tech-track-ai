@@ -18,6 +18,7 @@ export const ROUTES = {
     customers: "/admin/customers",
     equipment: "/admin/equipment",
     settings: "/admin/settings",
+    users: "/admin/users",
   },
 
   // Customer Portal Areas
@@ -32,7 +33,11 @@ export const ROUTES = {
   api: {
     dashboard: "/api/v1/admin/dashboard",
     customers: "/api/v1/customers",
+    customerDetail: (id: string) => `/api/v1/customers/${id}`,
     equipment: "/api/v1/equipment",
+    equipmentDetail: (id: string) => `/api/v1/equipment/${id}`,
+    users: "/api/v1/users",
+    userDetail: (id: string) => `/api/v1/users/${id}`,
     serviceOrders: "/api/v1/service-orders",
     serviceOrderDetail: (id: string) => `/api/v1/service-orders/${id}`,
     serviceOrderStatus: (id: string) => `/api/v1/service-orders/${id}/status`,
@@ -46,4 +51,3 @@ export const ROUTES = {
     webhooksClerk: "/api/webhooks/clerk",
   },
 } as const;
-
