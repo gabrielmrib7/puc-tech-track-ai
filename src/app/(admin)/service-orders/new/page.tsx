@@ -1,9 +1,6 @@
+import Link from "next/link";
+import { AdminShell } from "@/shared/components/AdminShell";
+
 export default function NewServiceOrderPage() {
-  return (
-    <main className="mx-auto max-w-3xl px-6 py-10">
-      <p className="text-sm text-brand-text-secondary">Entrada operacional</p>
-      <h1 className="text-3xl font-semibold">Nova Ordem de Serviço</h1>
-      <p className="mt-3 text-brand-text-secondary">Selecione um cliente e equipamento e registre o defeito relatado para iniciar a triagem.</p>
-    </main>
-  );
+  return <AdminShell active="Ordens de Serviço"><div className="mb-8 flex items-start justify-between"><div><h1 className="text-[32px] font-bold tracking-tight">Nova Ordem de Serviço</h1><p className="mt-2 text-base text-[#434655]">Preencha os detalhes para registrar uma nova solicitação de assistência técnica.</p></div><span className="rounded-full border border-[#c3c6d7] px-4 py-2 text-xs font-semibold text-[#434655]">● STATUS INICIAL: RECEBIDO</span></div><form className="rounded-lg border border-[#c3c6d7]/30 bg-[#faf8ff] p-5 shadow-[0_1px_3px_rgba(15,23,42,.08),0_4px_6px_rgba(15,23,42,.05)] md:p-6"><div className="grid gap-6 md:grid-cols-2"><label className="text-sm font-semibold">Cliente<select className="mt-2 h-11 w-full rounded-lg border border-[#c3c6d7] bg-[#faf8ff] px-3 font-normal"><option>Selecione ou busque um cliente...</option></select></label><label className="text-sm font-semibold">Equipamento<select className="mt-2 h-11 w-full rounded-lg border border-[#c3c6d7] bg-[#faf8ff] px-3 font-normal"><option>Selecione um equipamento...</option></select></label><label className="md:col-span-2 text-sm font-semibold">Problema Relatado<textarea className="mt-2 min-h-28 w-full rounded-lg border border-[#c3c6d7] bg-[#faf8ff] p-3 font-normal" placeholder="Descreva detalhadamente o problema informado pelo cliente..." /></label><label className="text-sm font-semibold">Acessórios Entregues<textarea className="mt-2 min-h-24 w-full rounded-lg border border-[#c3c6d7] bg-[#faf8ff] p-3 font-normal" placeholder="Ex: Cabos de força, manuais, peças soltas..." /></label><label className="text-sm font-semibold">Previsão de Conclusão<input type="date" className="mt-2 h-11 w-full rounded-lg border border-[#c3c6d7] bg-[#faf8ff] px-3 font-normal" /></label></div><div className="mt-6 flex justify-end gap-3 border-t border-[#c3c6d7]/30 pt-5"><Link href="/service-orders" className="rounded-lg border border-[#c3c6d7] px-5 py-3 text-sm font-semibold">Cancelar</Link><button type="button" className="rounded-lg bg-[#004ac6] px-5 py-3 text-sm font-semibold text-white">⊕ Criar Ordem</button></div></form></AdminShell>;
 }

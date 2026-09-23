@@ -28,4 +28,3 @@ test.describe("TechTrack — Smoke Test", () => {
     expect(consoleErrors).toHaveLength(0);
   });
 });
-
