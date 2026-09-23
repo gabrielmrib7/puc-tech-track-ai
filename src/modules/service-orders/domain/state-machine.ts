@@ -21,3 +21,15 @@ export function canTransition(from: OrderStatus, to: OrderStatus) {
 export function assertTransition(from: OrderStatus, to: OrderStatus) {
   if (!canTransition(from, to)) throw new Error(`INVALID_TRANSITION:${from}:${to}`);
 }
+
+export function isPreDiagnosisStatus(status: OrderStatus): boolean {
+  return status === "RECEIVED" || status === "WAITING_DIAGNOSIS";
+}
+
+export function isTerminalStatus(status: OrderStatus): boolean {
+  return status === "DELIVERED" || status === "CANCELLED";
+}
+
+export function canCancelOrder(status: OrderStatus): boolean {
+  return canTransition(status, "CANCELLED");
+}

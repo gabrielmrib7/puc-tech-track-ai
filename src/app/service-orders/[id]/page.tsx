@@ -21,7 +21,7 @@ import { AdminShell, StatusBadge } from "@/shared/components/AdminShell";
 import { LoadingState } from "@/shared/components/LoadingState";
 import { ErrorState } from "@/shared/components/ErrorState";
 import { SubmitButton } from "@/shared/components/SubmitButton";
-import { apiGet, apiPatch, apiPost } from "@/shared/lib/api-client";
+import { apiDelete, apiGet, apiPatch, apiPost } from "@/shared/lib/api-client";
 import { ROUTES } from "@/shared/constants/routes";
 import { humanizeStatus } from "@/modules/service-orders/presentation/customer/timeline";
 import { formatCurrencyBRL, formatLocalDateTime } from "@/shared/utils/formatters";
@@ -49,13 +49,16 @@ export default function ServiceOrderDetailPage({ params }: { params: { id: strin
   const [error, setError] = useState<string | null>(null);
 
   // Action Modals State
-  const [activeModal, setActiveModal] = useState<"diagnosis" | "budget" | "deliver" | null>(null);
+  const [activeModal, setActiveModal] = useState<"diagnosis" | "budget" | "deliver" | "edit-intake" | "cancel" | null>(null);
   const [isSubmittingAction, setIsSubmittingAction] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  // Diagnosis Form
+  // Diagnosis / Intake Form
   const [diagnosisText, setDiagnosisText] = useState("");
   const [completionDate, setCompletionDate] = useState("");
+
+  // Cancel Form
+  const [cancelReason, setCancelReason] = useState("");
 
   // Budget Form
   const [budgetDescription, setBudgetDescription] = useState("");
@@ -83,6 +86,11 @@ export default function ServiceOrderDetailPage({ params }: { params: { id: strin
 
     setOrder(res.data);
     setDiagnosisText(res.data.diagnosis || "");
+    if (res.data.estimated_completion) {
+      setCompletionDate(new Date(res.data.estimated_completion).toISOString().split("T")[0]);
+    } else {
+      setCompletionDate("");
+    }
     setIsLoading(false);
   }, [params.id]);
 
@@ -191,6 +199,58 @@ export default function ServiceOrderDetailPage({ params }: { params: { id: strin
     fetchOrderDetail();
   };
 
+  // Submit Pre-Diagnosis Intake Edit
+  const handleIntakeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!order) return;
+
+    setIsSubmittingAction(true);
+    setActionError(null);
+
+    const res = await apiPatch<ServiceOrderWithRelations>(
+      ROUTES.api.serviceOrderDetail(order.id),
+      {
+        diagnosis: diagnosisText.trim(),
+        estimatedCompletion: completionDate ? new Date(completionDate).toISOString() : null,
+      }
+    );
+
+    if (!res.ok) {
+      setActionError(res.error);
+      setIsSubmittingAction(false);
+      return;
+    }
+
+    setIsSubmittingAction(false);
+    setActiveModal(null);
+    fetchOrderDetail();
+  };
+
+  // Submit Order Cancellation
+  const handleCancelSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!order) return;
+
+    setIsSubmittingAction(true);
+    setActionError(null);
+
+    const res = await apiDelete<{ success: boolean; status: OrderStatus }>(
+      ROUTES.api.serviceOrderDetail(order.id),
+      { reason: cancelReason.trim() || undefined }
+    );
+
+    if (!res.ok) {
+      setActionError(res.error);
+      setIsSubmittingAction(false);
+      return;
+    }
+
+    setIsSubmittingAction(false);
+    setActiveModal(null);
+    setCancelReason("");
+    fetchOrderDetail();
+  };
+
   const isTerminal = order?.status === "DELIVERED" || order?.status === "CANCELLED";
 
   return (
@@ -236,113 +296,137 @@ export default function ServiceOrderDetailPage({ params }: { params: { id: strin
             </div>
 
             {/* Quick Transition Action Buttons */}
-            <div className="flex flex-wrap items-center gap-2">
-              {order.status === "RECEIVED" && (
-                <button
-                  type="button"
-                  onClick={() => handleTransition("WAITING_DIAGNOSIS")}
-                  className="rounded-lg bg-[#004ac6] px-4 py-2 text-xs font-bold text-white hover:bg-[#003ea8]"
-                >
-                  Encaminhar para Diagnóstico
-                </button>
-              )}
-
-              {order.status === "WAITING_DIAGNOSIS" && (
-                <button
-                  type="button"
-                  onClick={() => handleTransition("IN_DIAGNOSIS")}
-                  className="rounded-lg bg-[#004ac6] px-4 py-2 text-xs font-bold text-white hover:bg-[#003ea8]"
-                >
-                  Iniciar Diagnóstico Técnico
-                </button>
-              )}
-
-              {order.status === "IN_DIAGNOSIS" && (
-                <>
+            {!isTerminal && (
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Pre-diagnosis intake edit button */}
+                {(order.status === "RECEIVED" || order.status === "WAITING_DIAGNOSIS") && (
                   <button
                     type="button"
                     onClick={() => {
                       setActionError(null);
-                      setActiveModal("diagnosis");
+                      setDiagnosisText(order.diagnosis || "");
+                      setCompletionDate(
+                        order.estimated_completion
+                          ? new Date(order.estimated_completion).toISOString().split("T")[0]
+                          : ""
+                      );
+                      setActiveModal("edit-intake");
                     }}
-                    className="rounded-lg border border-[#c3c6d7] bg-white px-3.5 py-2 text-xs font-bold text-[#131b2e] hover:bg-[#f2f3ff]"
+                    className="rounded-lg border border-[#004ac6] bg-white px-3.5 py-2 text-xs font-bold text-[#004ac6] shadow-sm hover:bg-[#f2f3ff]"
                   >
-                    Editar Laudo
+                    Editar Dados de Entrada
                   </button>
+                )}
+
+                {order.status === "RECEIVED" && (
                   <button
                     type="button"
-                    onClick={() => {
-                      setActionError(null);
-                      setActiveModal("budget");
-                    }}
+                    onClick={() => handleTransition("WAITING_DIAGNOSIS")}
                     className="rounded-lg bg-[#004ac6] px-4 py-2 text-xs font-bold text-white hover:bg-[#003ea8]"
                   >
-                    Emitir Orçamento
+                    Encaminhar para Diagnóstico
                   </button>
+                )}
+
+                {order.status === "WAITING_DIAGNOSIS" && (
                   <button
                     type="button"
-                    onClick={() => handleTransition("IN_REPAIR", "Reparo aprovado sem custo / garantia")}
-                    className="rounded-lg bg-[#16a34a] px-3.5 py-2 text-xs font-bold text-white hover:bg-[#15803d]"
+                    onClick={() => handleTransition("IN_DIAGNOSIS")}
+                    className="rounded-lg bg-[#004ac6] px-4 py-2 text-xs font-bold text-white hover:bg-[#003ea8]"
                   >
-                    Reparo Direto (Garantia)
+                    Iniciar Diagnóstico Técnico
                   </button>
-                </>
-              )}
+                )}
 
-              {order.status === "APPROVED" && (
-                <button
-                  type="button"
-                  onClick={() => handleTransition("IN_REPAIR")}
-                  className="rounded-lg bg-[#004ac6] px-4 py-2 text-xs font-bold text-white hover:bg-[#003ea8]"
-                >
-                  Iniciar Execução do Reparo
-                </button>
-              )}
+                {order.status === "IN_DIAGNOSIS" && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActionError(null);
+                        setActiveModal("diagnosis");
+                      }}
+                      className="rounded-lg border border-[#c3c6d7] bg-white px-3.5 py-2 text-xs font-bold text-[#131b2e] hover:bg-[#f2f3ff]"
+                    >
+                      Editar Laudo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActionError(null);
+                        setActiveModal("budget");
+                      }}
+                      className="rounded-lg bg-[#004ac6] px-4 py-2 text-xs font-bold text-white hover:bg-[#003ea8]"
+                    >
+                      Emitir Orçamento
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleTransition("IN_REPAIR", "Reparo aprovado sem custo / garantia")}
+                      className="rounded-lg bg-[#16a34a] px-3.5 py-2 text-xs font-bold text-white hover:bg-[#15803d]"
+                    >
+                      Reparo Direto (Garantia)
+                    </button>
+                  </>
+                )}
 
-              {order.status === "IN_REPAIR" && (
-                <button
-                  type="button"
-                  onClick={() => handleTransition("COMPLETED")}
-                  className="rounded-lg bg-[#004ac6] px-4 py-2 text-xs font-bold text-white hover:bg-[#003ea8]"
-                >
-                  Concluir Reparo
-                </button>
-              )}
+                {order.status === "APPROVED" && (
+                  <button
+                    type="button"
+                    onClick={() => handleTransition("IN_REPAIR")}
+                    className="rounded-lg bg-[#004ac6] px-4 py-2 text-xs font-bold text-white hover:bg-[#003ea8]"
+                  >
+                    Iniciar Execução do Reparo
+                  </button>
+                )}
 
-              {order.status === "COMPLETED" && (
-                <button
-                  type="button"
-                  onClick={() => handleTransition("READY_FOR_PICKUP")}
-                  className="rounded-lg bg-[#16a34a] px-4 py-2 text-xs font-bold text-white hover:bg-[#15803d]"
-                >
-                  Marcar Pronto p/ Retirada
-                </button>
-              )}
+                {order.status === "IN_REPAIR" && (
+                  <button
+                    type="button"
+                    onClick={() => handleTransition("COMPLETED")}
+                    className="rounded-lg bg-[#004ac6] px-4 py-2 text-xs font-bold text-white hover:bg-[#003ea8]"
+                  >
+                    Concluir Reparo
+                  </button>
+                )}
 
-              {order.status === "READY_FOR_PICKUP" && (
+                {order.status === "COMPLETED" && (
+                  <button
+                    type="button"
+                    onClick={() => handleTransition("READY_FOR_PICKUP")}
+                    className="rounded-lg bg-[#16a34a] px-4 py-2 text-xs font-bold text-white hover:bg-[#15803d]"
+                  >
+                    Marcar Pronto p/ Retirada
+                  </button>
+                )}
+
+                {order.status === "READY_FOR_PICKUP" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActionError(null);
+                      setRecipientName(order.customer?.name || "");
+                      setActiveModal("deliver");
+                    }}
+                    className="rounded-lg bg-[#16a34a] px-4 py-2 text-xs font-bold text-white hover:bg-[#15803d]"
+                  >
+                    Registrar Entrega
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={() => {
                     setActionError(null);
-                    setRecipientName(order.customer?.name || "");
-                    setActiveModal("deliver");
+                    setCancelReason("");
+                    setActiveModal("cancel");
                   }}
-                  className="rounded-lg bg-[#16a34a] px-4 py-2 text-xs font-bold text-white hover:bg-[#15803d]"
-                >
-                  Registrar Entrega
-                </button>
-              )}
-
-              {!isTerminal && (
-                <button
-                  type="button"
-                  onClick={() => handleTransition("CANCELLED", "Cancelamento administrativo")}
                   className="rounded-lg border border-[#ba1a1a]/30 bg-[#ffdad6]/20 px-3 py-2 text-xs font-bold text-[#ba1a1a] hover:bg-[#ffdad6]"
                 >
                   Cancelar OS
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           {actionError && (
@@ -353,7 +437,13 @@ export default function ServiceOrderDetailPage({ params }: { params: { id: strin
           )}
 
           {isTerminal && (
-            <div className="mb-8 rounded-xl border border-slate-200 bg-slate-100 p-4 text-sm font-semibold text-slate-700">
+            <div
+              className={`mb-8 rounded-xl border p-4 text-sm font-semibold shadow-sm ${
+                order.status === "DELIVERED"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  : "border-red-200 bg-red-50 text-red-800"
+              }`}
+            >
               ● Esta ordem de serviço atingiu o estado final ({humanizeStatus(order.status)}) e é imutável.
             </div>
           )}
@@ -663,6 +753,95 @@ export default function ServiceOrderDetailPage({ params }: { params: { id: strin
                     <SubmitButton isLoading={isSubmittingAction} loadingText="Finalizando Entrega...">
                       Confirmar Entrega
                     </SubmitButton>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal: Edit Intake */}
+          {activeModal === "edit-intake" && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+              <div className="w-full max-w-lg rounded-2xl border border-[#c3c6d7]/40 bg-white p-6 shadow-xl">
+                <h3 className="text-lg font-bold text-[#131b2e]">Editar Dados de Entrada da OS</h3>
+                <p className="mt-1 text-xs text-[#434655]">
+                  Edição permitida somente na triagem inicial (antes do início do diagnóstico técnico).
+                </p>
+                <form onSubmit={handleIntakeSubmit} className="mt-4 space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#434655]">Defeito / Relato Inicial *</label>
+                    <textarea
+                      required
+                      rows={4}
+                      value={diagnosisText}
+                      onChange={(e) => setDiagnosisText(e.target.value)}
+                      placeholder="Descreva o problema relatado..."
+                      className="mt-1 w-full rounded-lg border border-[#c3c6d7] p-3 text-sm text-[#131b2e] outline-none focus:border-[#004ac6]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#434655]">Previsão de Conclusão</label>
+                    <input
+                      type="date"
+                      value={completionDate}
+                      onChange={(e) => setCompletionDate(e.target.value)}
+                      className="mt-1 h-10 w-full rounded-lg border border-[#c3c6d7] px-3 text-sm text-[#131b2e]"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-3 pt-3">
+                    <button
+                      type="button"
+                      onClick={() => setActiveModal(null)}
+                      className="rounded-lg border border-[#c3c6d7] px-4 py-2 text-sm font-semibold text-[#515f74]"
+                    >
+                      Cancelar
+                    </button>
+                    <SubmitButton isLoading={isSubmittingAction} loadingText="Salvando...">
+                      Salvar Alterações
+                    </SubmitButton>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal: Cancel Order */}
+          {activeModal === "cancel" && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+              <div className="w-full max-w-md rounded-2xl border border-red-200 bg-white p-6 shadow-xl">
+                <div className="flex items-center gap-3 text-red-600">
+                  <AlertTriangle size={24} />
+                  <h3 className="text-lg font-bold text-[#131b2e]">Cancelar Ordem de Serviço</h3>
+                </div>
+                <p className="mt-2 text-xs text-[#515f74]">
+                  Esta ação é irreversível. O status da OS passará para <strong>CANCELADO</strong> e um registro imutável será gravado no histórico de auditoria.
+                </p>
+                <form onSubmit={handleCancelSubmit} className="mt-4 space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#434655]">Motivo do Cancelamento (opcional)</label>
+                    <textarea
+                      rows={3}
+                      value={cancelReason}
+                      onChange={(e) => setCancelReason(e.target.value)}
+                      placeholder="Ex: Cliente desistiu do reparo antes da análise..."
+                      className="mt-1 w-full rounded-lg border border-[#c3c6d7] p-2.5 text-sm text-[#131b2e] outline-none focus:border-red-500"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveModal(null)}
+                      className="rounded-lg border border-[#c3c6d7] px-4 py-2 text-sm font-semibold text-[#515f74]"
+                    >
+                      Voltar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmittingAction}
+                      className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-red-700 disabled:opacity-50"
+                    >
+                      {isSubmittingAction ? "Cancelando..." : "Confirmar Cancelamento"}
+                    </button>
                   </div>
                 </form>
               </div>

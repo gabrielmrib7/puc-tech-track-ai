@@ -78,7 +78,10 @@ export function apiPatch<T>(url: string, body?: unknown) {
   });
 }
 
-export function apiDelete<T>(url: string) {
-  return requestApi<T>(url, { method: "DELETE" });
+export function apiDelete<T>(url: string, body?: unknown) {
+  return requestApi<T>(url, {
+    method: "DELETE",
+    body: body ? JSON.stringify(body) : undefined,
+  });
 }
 
