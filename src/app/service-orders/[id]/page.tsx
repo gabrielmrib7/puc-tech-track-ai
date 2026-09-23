@@ -16,6 +16,8 @@ import {
   AlertTriangle,
   Send,
   XCircle,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { AdminShell, StatusBadge } from "@/shared/components/AdminShell";
 import { LoadingState } from "@/shared/components/LoadingState";
@@ -43,13 +45,28 @@ function getBadgeTone(status: OrderStatus): "blue" | "amber" | "green" | "red" {
   }
 }
 
+function getBudgetBadgeTone(status: string): "blue" | "amber" | "green" | "red" {
+  switch (status) {
+    case "PENDING":
+      return "amber";
+    case "APPROVED":
+      return "green";
+    case "REJECTED":
+      return "red";
+    default:
+      return "blue";
+  }
+}
+
 export default function ServiceOrderDetailPage({ params }: { params: { id: string } }) {
   const [order, setOrder] = useState<ServiceOrderWithRelations | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Action Modals State
-  const [activeModal, setActiveModal] = useState<"diagnosis" | "budget" | "deliver" | "edit-intake" | "cancel" | null>(null);
+  const [activeModal, setActiveModal] = useState<
+    "diagnosis" | "budget" | "deliver" | "edit-intake" | "cancel" | "edit-budget" | "delete-budget" | null
+  >(null);
   const [isSubmittingAction, setIsSubmittingAction] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -91,6 +108,15 @@ export default function ServiceOrderDetailPage({ params }: { params: { id: strin
     } else {
       setCompletionDate("");
     }
+
+    if (res.data.budgets && res.data.budgets.length > 0) {
+      const b = res.data.budgets[0];
+      setBudgetDescription(b.description || "");
+      setPartsCost(String(b.parts_cost || 0));
+      setLaborCost(String(b.labor_cost || 0));
+      setBudgetNotes(b.notes || "");
+    }
+
     setIsLoading(false);
   }, [params.id]);
 
@@ -143,7 +169,34 @@ export default function ServiceOrderDetailPage({ params }: { params: { id: strin
     fetchOrderDetail();
   };
 
-  // Submit Budget
+  // Open Budget Modals
+  const openNewBudgetModal = () => {
+    setBudgetDescription(order?.diagnosis || "");
+    setPartsCost("0");
+    setLaborCost("0");
+    setBudgetNotes("");
+    setActionError(null);
+    setActiveModal("budget");
+  };
+
+  const openEditBudgetModal = () => {
+    if (order?.budgets && order.budgets.length > 0) {
+      const b = order.budgets[0];
+      setBudgetDescription(b.description || "");
+      setPartsCost(String(b.parts_cost ?? 0));
+      setLaborCost(String(b.labor_cost ?? 0));
+      setBudgetNotes(b.notes || "");
+    }
+    setActionError(null);
+    setActiveModal("edit-budget");
+  };
+
+  const openDeleteBudgetModal = () => {
+    setActionError(null);
+    setActiveModal("delete-budget");
+  };
+
+  // Submit Budget Create
   const handleBudgetSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!order) return;
@@ -164,11 +217,52 @@ export default function ServiceOrderDetailPage({ params }: { params: { id: strin
       return;
     }
 
-    // Also advance status to WAITING_APPROVAL
-    await apiPatch(ROUTES.api.serviceOrderStatus(order.id), {
-      status: "WAITING_APPROVAL",
-      description: "Orçamento emitido e aguardando aprovação do cliente",
+    setIsSubmittingAction(false);
+    setActiveModal(null);
+    fetchOrderDetail();
+  };
+
+  // Submit Budget Edit
+  const handleBudgetEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!order) return;
+
+    setIsSubmittingAction(true);
+    setActionError(null);
+
+    const res = await apiPatch(ROUTES.api.serviceOrderBudget(order.id), {
+      description: budgetDescription.trim(),
+      partsCost: parseFloat(partsCost) || 0,
+      laborCost: parseFloat(laborCost) || 0,
+      notes: budgetNotes.trim() || undefined,
     });
+
+    if (!res.ok) {
+      setActionError(res.error);
+      setIsSubmittingAction(false);
+      return;
+    }
+
+    setIsSubmittingAction(false);
+    setActiveModal(null);
+    fetchOrderDetail();
+  };
+
+  // Submit Budget Delete
+  const handleBudgetDeleteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!order) return;
+
+    setIsSubmittingAction(true);
+    setActionError(null);
+
+    const res = await apiDelete(ROUTES.api.serviceOrderBudget(order.id));
+
+    if (!res.ok) {
+      setActionError(res.error);
+      setIsSubmittingAction(false);
+      return;
+    }
 
     setIsSubmittingAction(false);
     setActiveModal(null);
@@ -352,10 +446,7 @@ export default function ServiceOrderDetailPage({ params }: { params: { id: strin
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        setActionError(null);
-                        setActiveModal("budget");
-                      }}
+                      onClick={openNewBudgetModal}
                       className="rounded-lg bg-[#004ac6] px-4 py-2 text-xs font-bold text-white hover:bg-[#003ea8]"
                     >
                       Emitir Orçamento
@@ -368,6 +459,16 @@ export default function ServiceOrderDetailPage({ params }: { params: { id: strin
                       Reparo Direto (Garantia)
                     </button>
                   </>
+                )}
+
+                {order.status === "WAITING_APPROVAL" && (!order.budgets || order.budgets.length === 0) && (
+                  <button
+                    type="button"
+                    onClick={openNewBudgetModal}
+                    className="flex items-center gap-1.5 rounded-lg bg-[#004ac6] px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#003ea8]"
+                  >
+                    <DollarSign size={15} /> Emitir Orçamento
+                  </button>
                 )}
 
                 {order.status === "APPROVED" && (
@@ -493,15 +594,27 @@ export default function ServiceOrderDetailPage({ params }: { params: { id: strin
               {/* Budget Card */}
               {order.budgets && order.budgets.length > 0 && (
                 <div className="rounded-xl border border-[#c3c6d7]/30 bg-[#faf8ff] p-5 shadow-sm">
-                  <div className="flex items-center gap-2 border-b border-[#c3c6d7]/30 pb-3">
-                    <DollarSign size={18} className="text-[#16a34a]" />
-                    <h3 className="font-bold text-[#131b2e]">Orçamento</h3>
+                  <div className="flex items-center justify-between border-b border-[#c3c6d7]/30 pb-3">
+                    <div className="flex items-center gap-2">
+                      <DollarSign size={18} className="text-[#16a34a]" />
+                      <h3 className="font-bold text-[#131b2e]">Orçamento</h3>
+                    </div>
+                    <StatusBadge tone={getBudgetBadgeTone(order.budgets[0].status)}>
+                      {order.budgets[0].status === "PENDING"
+                        ? "Pendente"
+                        : order.budgets[0].status === "APPROVED"
+                        ? "Aprovado"
+                        : order.budgets[0].status === "REJECTED"
+                        ? "Recusado"
+                        : order.budgets[0].status}
+                    </StatusBadge>
                   </div>
                   <div className="mt-3 space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-xs text-[#434655]">Status:</span>
-                      <span className="font-bold text-xs">{order.budgets[0].status}</span>
-                    </div>
+                    {order.budgets[0].description && (
+                      <p className="text-xs font-medium text-[#434655]">
+                        {order.budgets[0].description}
+                      </p>
+                    )}
                     <div className="flex justify-between border-t border-[#c3c6d7]/20 pt-2">
                       <span className="text-xs text-[#434655]">Peças:</span>
                       <span className="text-xs font-semibold">
@@ -518,6 +631,32 @@ export default function ServiceOrderDetailPage({ params }: { params: { id: strin
                       <span>Total:</span>
                       <span>{formatCurrencyBRL(Number(order.budgets[0].amount))}</span>
                     </div>
+                    {order.budgets[0].notes && (
+                      <div className="mt-2 rounded-lg bg-[#f2f3ff] p-2 text-xs text-[#434655]">
+                        <span className="font-semibold text-[#131b2e]">Obs: </span>
+                        {order.budgets[0].notes}
+                      </div>
+                    )}
+
+                    {/* Pending Budget Actions */}
+                    {order.budgets[0].status === "PENDING" && !isTerminal && (
+                      <div className="mt-4 flex gap-2 border-t border-[#c3c6d7]/20 pt-3">
+                        <button
+                          type="button"
+                          onClick={openEditBudgetModal}
+                          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-[#c3c6d7] bg-white py-1.5 text-xs font-semibold text-[#004ac6] hover:bg-[#f2f3ff]"
+                        >
+                          <Pencil size={13} /> Editar Orçamento
+                        </button>
+                        <button
+                          type="button"
+                          onClick={openDeleteBudgetModal}
+                          className="flex items-center justify-center gap-1.5 rounded-lg border border-[#ba1a1a]/30 bg-[#ffdad6]/20 px-3 py-1.5 text-xs font-semibold text-[#ba1a1a] hover:bg-[#ffdad6]"
+                        >
+                          <Trash2 size={13} /> Excluir
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -683,6 +822,12 @@ export default function ServiceOrderDetailPage({ params }: { params: { id: strin
                       />
                     </div>
                   </div>
+                  <div className="flex items-center justify-between rounded-lg bg-[#f2f3ff] p-3 text-xs font-semibold text-[#004ac6]">
+                    <span>Total Previsto:</span>
+                    <span className="text-sm font-bold">
+                      {formatCurrencyBRL((parseFloat(partsCost) || 0) + (parseFloat(laborCost) || 0))}
+                    </span>
+                  </div>
                   <div>
                     <label className="block text-xs font-bold text-[#434655]">Observações Técnicas</label>
                     <textarea
@@ -703,6 +848,115 @@ export default function ServiceOrderDetailPage({ params }: { params: { id: strin
                     <SubmitButton isLoading={isSubmittingAction} loadingText="Emitindo...">
                       Emitir e Notificar Cliente
                     </SubmitButton>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal: Edit Budget */}
+          {activeModal === "edit-budget" && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+              <div className="w-full max-w-lg rounded-2xl border border-[#c3c6d7]/40 bg-white p-6 shadow-xl">
+                <h3 className="text-lg font-bold text-[#131b2e]">Editar Orçamento Pendente</h3>
+                <p className="mt-1 text-xs text-[#434655]">
+                  Altere os custos ou a descrição dos serviços deste orçamento em rascunho.
+                </p>
+                <form onSubmit={handleBudgetEditSubmit} className="mt-4 space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#434655]">Descrição dos Serviços *</label>
+                    <input
+                      type="text"
+                      required
+                      value={budgetDescription}
+                      onChange={(e) => setBudgetDescription(e.target.value)}
+                      placeholder="Ex: Troca de tela e reparo de placa"
+                      className="mt-1 h-10 w-full rounded-lg border border-[#c3c6d7] px-3 text-sm text-[#131b2e]"
+                    />
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="block text-xs font-bold text-[#434655]">Custo de Peças (R$)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={partsCost}
+                        onChange={(e) => setPartsCost(e.target.value)}
+                        className="mt-1 h-10 w-full rounded-lg border border-[#c3c6d7] px-3 text-sm text-[#131b2e]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#434655]">Mão de Obra (R$)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={laborCost}
+                        onChange={(e) => setLaborCost(e.target.value)}
+                        className="mt-1 h-10 w-full rounded-lg border border-[#c3c6d7] px-3 text-sm text-[#131b2e]"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg bg-[#f2f3ff] p-3 text-xs font-semibold text-[#004ac6]">
+                    <span>Total Recalculado:</span>
+                    <span className="text-sm font-bold">
+                      {formatCurrencyBRL((parseFloat(partsCost) || 0) + (parseFloat(laborCost) || 0))}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#434655]">Observações Técnicas</label>
+                    <textarea
+                      rows={3}
+                      value={budgetNotes}
+                      onChange={(e) => setBudgetNotes(e.target.value)}
+                      className="mt-1 w-full rounded-lg border border-[#c3c6d7] p-2 text-sm text-[#131b2e]"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-3 pt-3">
+                    <button
+                      type="button"
+                      onClick={() => setActiveModal(null)}
+                      className="rounded-lg border border-[#c3c6d7] px-4 py-2 text-sm font-semibold text-[#515f74]"
+                    >
+                      Cancelar
+                    </button>
+                    <SubmitButton isLoading={isSubmittingAction} loadingText="Salvando...">
+                      Salvar Alterações
+                    </SubmitButton>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal: Delete Budget */}
+          {activeModal === "delete-budget" && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+              <div className="w-full max-w-md rounded-2xl border border-red-200 bg-white p-6 shadow-xl">
+                <div className="flex items-center gap-3 text-red-600">
+                  <AlertTriangle size={24} />
+                  <h3 className="text-lg font-bold text-[#131b2e]">Excluir Orçamento</h3>
+                </div>
+                <p className="mt-2 text-xs text-[#515f74]">
+                  Tem certeza de que deseja excluir este orçamento em rascunho? O valor e os dados do orçamento serão removidos da ordem de serviço.
+                </p>
+                <form onSubmit={handleBudgetDeleteSubmit} className="mt-4">
+                  <div className="flex justify-end gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveModal(null)}
+                      className="rounded-lg border border-[#c3c6d7] px-4 py-2 text-sm font-semibold text-[#515f74]"
+                    >
+                      Voltar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmittingAction}
+                      className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-red-700 disabled:opacity-50"
+                    >
+                      {isSubmittingAction ? "Excluindo..." : "Confirmar Exclusão"}
+                    </button>
                   </div>
                 </form>
               </div>
