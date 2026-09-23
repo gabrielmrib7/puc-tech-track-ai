@@ -1,8 +1,44 @@
 import { describe, expect, it, vi } from "vitest";
-import { syncClerkUser } from "./sync-clerk-user";
+import { syncClerkUser, isAutoAdminEmail } from "./sync-clerk-user";
 import type { PrismaClient } from "@prisma/client";
 
 describe("syncClerkUser", () => {
+  it("automatically assigns ADMIN role to admin@techtrack.com", async () => {
+    const prisma = {
+      user: {
+        findUnique: vi.fn().mockResolvedValue(null),
+        create: vi.fn().mockResolvedValue({
+          id: "u-admin",
+          clerk_id: "clerk_admin",
+          email: "admin@techtrack.com",
+          name: "Admin User",
+          role: "ADMIN",
+        }),
+      },
+    } as unknown as PrismaClient;
+
+    const user = await syncClerkUser(prisma, {
+      clerkId: "clerk_admin",
+      email: "admin@techtrack.com",
+      name: "Admin User",
+    });
+
+    expect(user.role).toBe("ADMIN");
+    expect(prisma.user.create).toHaveBeenCalledWith({
+      data: {
+        clerk_id: "clerk_admin",
+        email: "admin@techtrack.com",
+        name: "Admin User",
+        role: "ADMIN",
+      },
+    });
+  });
+
+  it("checks isAutoAdminEmail correctly", () => {
+    expect(isAutoAdminEmail("admin@techtrack.com")).toBe(true);
+    expect(isAutoAdminEmail(" ADMIN@TECHTRACK.COM ")).toBe(true);
+    expect(isAutoAdminEmail("other@example.com")).toBe(false);
+  });
   it("creates a new user when no record exists by clerk_id or email", async () => {
     const prisma = {
       user: {

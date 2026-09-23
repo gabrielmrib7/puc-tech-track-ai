@@ -8,11 +8,29 @@ export type ClerkUserInput = {
 };
 
 /**
+ * Checks if the given email is designated as an auto-provisioned ADMIN.
+ * Defaults to including 'admin@techtrack.com' and any comma-separated emails in ADMIN_EMAILS.
+ */
+export function isAutoAdminEmail(email: string): boolean {
+  const normalized = email.trim().toLowerCase();
+  const envAdminEmails = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  return normalized === "admin@techtrack.com" || envAdminEmails.includes(normalized);
+}
+
+/**
  * Idempotent synchronization of Clerk identity to local application User model.
  * Handles duplicate delivery, updating changed profiles without altering existing roles,
  * and associating pre-existing email records to the new Clerk identifier.
+ * Automatically assigns ADMIN role if the email matches designated auto-admin emails.
  */
 export async function syncClerkUser(prisma: PrismaClient, input: ClerkUserInput) {
+  const shouldBeAdmin = isAutoAdminEmail(input.email);
+  const targetRole: UserRole | undefined = shouldBeAdmin ? "ADMIN" : input.role;
+
   const existingByClerk = await prisma.user.findUnique({
     where: { clerk_id: input.clerkId },
   });
@@ -23,7 +41,7 @@ export async function syncClerkUser(prisma: PrismaClient, input: ClerkUserInput)
       data: {
         email: input.email,
         name: input.name,
-        ...(input.role ? { role: input.role } : {}),
+        ...(targetRole ? { role: targetRole } : {}),
       },
     });
   }
@@ -38,7 +56,7 @@ export async function syncClerkUser(prisma: PrismaClient, input: ClerkUserInput)
       data: {
         clerk_id: input.clerkId,
         name: input.name,
-        ...(input.role ? { role: input.role } : {}),
+        ...(targetRole ? { role: targetRole } : {}),
       },
     });
   }
@@ -48,7 +66,7 @@ export async function syncClerkUser(prisma: PrismaClient, input: ClerkUserInput)
       clerk_id: input.clerkId,
       email: input.email,
       name: input.name,
-      role: input.role ?? "ATTENDANT",
+      role: targetRole ?? "ATTENDANT",
     },
   });
 }
