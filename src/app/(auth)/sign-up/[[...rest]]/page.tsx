@@ -1,7 +1,7 @@
-import { SignIn } from "@clerk/nextjs";
+import { SignUp } from "@clerk/nextjs";
 import Link from "next/link";
 
-export default function LoginPage() {
+export default function SignUpPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-[#f8fafc] px-4 py-12">
       <div className="mb-6 flex flex-col items-center text-center">
@@ -16,7 +16,7 @@ export default function LoginPage() {
         </p>
       </div>
       <div className="w-full max-w-md">
-        <SignIn routing="path" path="/login" signUpUrl="/sign-up" fallbackRedirectUrl="/post-login" />
+        <SignUp routing="path" path="/sign-up" signInUrl="/login" fallbackRedirectUrl="/post-login" />
       </div>
     </main>
   );
