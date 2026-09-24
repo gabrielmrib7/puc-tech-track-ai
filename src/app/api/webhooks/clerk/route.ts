@@ -4,6 +4,8 @@ import { Webhook } from "svix";
 import { prisma } from "@/shared/infrastructure/database/prisma";
 import { syncClerkUser } from "@/modules/auth/application/sync-clerk-user";
 
+export const dynamic = "force-dynamic";
+
 type ClerkWebhookEvent = {
   type: string;
   data: {

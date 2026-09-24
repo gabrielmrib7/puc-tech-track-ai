@@ -5,7 +5,7 @@ import { defineConfig, devices } from '@playwright/test';
 dotenv.config({ path: path.resolve(__dirname, '.env.local') });
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000';
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:3000';
 const authState = path.resolve(__dirname, 'playwright/.auth/user.json');
 const hasClerkCredentials = Boolean(
   process.env.E2E_CLERK_USER_IDENTIFIER && process.env.E2E_CLERK_USER_PASSWORD,
@@ -65,7 +65,7 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
@@ -81,7 +81,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     cwd: __dirname,
-    command: 'npx next start -p 3000',
+    command: 'npx next start -H 127.0.0.1 -p 3000',
     url: `${baseURL}/login`,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,

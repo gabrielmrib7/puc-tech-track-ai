@@ -5,6 +5,8 @@ import { prisma } from "@/shared/infrastructure/database/prisma";
 import { allocateOrderNumber } from "@/modules/service-orders/domain/order-number";
 import { serviceOrderInputSchema } from "@/modules/service-orders/domain/intake";
 
+export const dynamic = "force-dynamic";
+
 async function getStaff() {
   const { userId } = await auth();
   if (!userId) return null;

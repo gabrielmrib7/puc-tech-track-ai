@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/shared/infrastructure/database/prisma";
 import { requireUser } from "@/shared/infrastructure/auth/guards";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(): Promise<NextResponse> {
   const authResult = await requireUser();
   if (authResult.errorResponse) return authResult.errorResponse;

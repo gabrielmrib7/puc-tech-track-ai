@@ -14,6 +14,7 @@ import {
 import { LoadingState } from "@/shared/components/LoadingState";
 import { ErrorState } from "@/shared/components/ErrorState";
 import { SubmitButton } from "@/shared/components/SubmitButton";
+import { SignOutButton } from "@/shared/components/SignOutButton";
 import { apiGet, apiPost } from "@/shared/lib/api-client";
 import { ROUTES } from "@/shared/constants/routes";
 import { formatCurrencyBRL } from "@/shared/utils/formatters";
@@ -89,7 +90,7 @@ export default function CustomerBudgetPage({ params }: { params: { id: string } 
           <ArrowLeft size={16} /> Voltar ao Portal
         </Link>
         <h1 className="text-lg font-bold text-[#004ac6]">TechTrack</h1>
-        <div className="w-16" />
+        <SignOutButton />
       </header>
 
       <div className="mx-auto max-w-lg space-y-5 p-4">

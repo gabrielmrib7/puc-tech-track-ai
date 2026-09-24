@@ -3,6 +3,8 @@ import { prisma } from "@/shared/infrastructure/database/prisma";
 import { requireUser } from "@/shared/infrastructure/auth/guards";
 import { assertTransition } from "@/modules/service-orders/domain/state-machine";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(
   _request: Request,
   { params }: { params: { id: string; decision: string } }

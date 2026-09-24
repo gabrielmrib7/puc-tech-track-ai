@@ -5,6 +5,8 @@ import { getPostLoginPath } from "@/modules/auth/domain/roles";
 import { syncClerkUser, isAutoAdminEmail } from "@/modules/auth/application/sync-clerk-user";
 import { bootstrapAdminIfEligible } from "@/modules/auth/application/bootstrap-admin";
 
+export const dynamic = "force-dynamic";
+
 export default async function PostLoginPage() {
   const { userId } = await auth();
   if (!userId) redirect("/login");

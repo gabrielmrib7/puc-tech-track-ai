@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { equipmentInputSchema } from "@/modules/equipment/domain/schemas";
 import { prisma } from "@/shared/infrastructure/database/prisma";
 
+export const dynamic = "force-dynamic";
+
 async function requireStaff() {
   const { userId } = await auth();
   if (!userId) return false;

@@ -7,6 +7,7 @@ import { LoadingState } from "@/shared/components/LoadingState";
 import { ErrorState } from "@/shared/components/ErrorState";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { StatusBadge } from "@/shared/components/AdminShell";
+import { SignOutButton } from "@/shared/components/SignOutButton";
 import { apiGet } from "@/shared/lib/api-client";
 import { ROUTES } from "@/shared/constants/routes";
 import { humanizeStatus } from "@/modules/service-orders/presentation/customer/timeline";
@@ -67,7 +68,7 @@ export default function CustomerOrdersPage() {
           <ArrowLeft size={16} /> Voltar ao Portal
         </Link>
         <h1 className="text-lg font-bold text-[#004ac6]">TechTrack</h1>
-        <div className="w-16" />
+        <SignOutButton />
       </header>
 
       <div className="mx-auto max-w-lg space-y-4 p-4 pb-12">

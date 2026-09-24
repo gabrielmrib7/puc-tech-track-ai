@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/shared/infrastructure/database/prisma";
 import { humanizeStatus } from "@/modules/service-orders/presentation/customer/timeline";
+import { SignOutButton } from "@/shared/components/SignOutButton";
 import type { OrderStatus } from "@prisma/client";
 
 function getBadgeStyle(status: OrderStatus) {
@@ -20,6 +21,8 @@ function getBadgeStyle(status: OrderStatus) {
       return "bg-[#dbe1ff] text-[#004ac6]";
   }
 }
+
+export const dynamic = "force-dynamic";
 
 export default async function CustomerPortalPage() {
   const { userId } = await auth();
@@ -52,7 +55,10 @@ export default async function CustomerPortalPage() {
     <main className="min-h-screen bg-[#faf8ff] text-[#131b2e]">
       <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-[#c3c6d7]/50 bg-[#faf8ff] px-4 shadow-sm">
         <strong className="text-xl text-[#004ac6]">TechTrack</strong>
-        <span className="text-sm text-[#434655]">Olá, {user.name}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-[#434655]">Olá, {user.name}</span>
+          <SignOutButton />
+        </div>
       </header>
 
       <div className="mx-auto max-w-lg space-y-6 p-4 pb-10">

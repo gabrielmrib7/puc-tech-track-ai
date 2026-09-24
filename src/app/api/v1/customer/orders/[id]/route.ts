@@ -3,6 +3,8 @@ import { prisma } from "@/shared/infrastructure/database/prisma";
 import { requireUser } from "@/shared/infrastructure/auth/guards";
 import { humanizeStatus } from "@/modules/service-orders/presentation/customer/timeline";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   _request: Request,
   { params }: { params: { id: string } }

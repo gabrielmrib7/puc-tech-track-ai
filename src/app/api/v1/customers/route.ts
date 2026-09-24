@@ -4,6 +4,8 @@ import { customerInputSchema } from "@/modules/customers/domain/schemas";
 import { syncClerkUser } from "@/modules/auth/application/sync-clerk-user";
 import { prisma } from "@/shared/infrastructure/database/prisma";
 
+export const dynamic = "force-dynamic";
+
 async function requireStaff() {
   const { userId } = await auth();
   if (!userId) return null;

@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/shared/infrastructure/database/prisma";
 import { assertTransition } from "@/modules/service-orders/domain/state-machine";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: Request, { params }: { params: { id: string } }) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
