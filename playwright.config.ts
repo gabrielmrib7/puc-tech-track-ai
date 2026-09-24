@@ -78,12 +78,14 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [...browserProjects, ...authenticatedProjects],
 
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    cwd: __dirname,
-    command: 'npx next start -H 127.0.0.1 -p 3000',
-    url: `${baseURL}/login`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
+  /* Run local dev server before starting the tests only if baseURL is not an external URL (e.g. Vercel) */
+  webServer: baseURL.startsWith('https://')
+    ? undefined
+    : {
+        cwd: __dirname,
+        command: 'npx next start -H 127.0.0.1 -p 3000',
+        url: `${baseURL}/login`,
+        reuseExistingServer: true,
+        timeout: 120000,
+      },
 });
