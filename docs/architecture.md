@@ -88,6 +88,7 @@ Backend
 ├── Service Orders
 ├── Budgets
 ├── History
+├── AI Assistant (Tecnologia de Fronteira)
 └── Notifications
 ```
 
@@ -226,13 +227,16 @@ Responsável pelos recursos externos utilizados pela aplicação.
 
 Componentes:
 
-- Banco de dados.
-- ORM.
-- Repositórios.
-- Serviço de autenticação.
+- Banco de dados (PostgreSQL via Supabase).
+- ORM (Prisma).
+- Repositórios tipados de domínio.
+- Provedor de Identidade e Autenticação (Clerk).
+- Gateway de Inteligência Artificial (Google Gemini / OpenAI Adapter).
 - Serviço de envio de notificações.
-- Logs.
-- Configurações externas.
+- Logs e auditoria imutável.
+- Configurações externas e variáveis de ambiente.
+- Empacotamento em Contêineres OCI (Docker multi-stage).
+- Infraestrutura como Código (Terraform).
 
 Exemplo:
 
@@ -241,6 +245,7 @@ ServiceOrderRepository
 CustomerRepository
 UserRepository
 BudgetRepository
+AiDiagnosisProviderGateway
 ```
 
 ---
@@ -703,29 +708,49 @@ Os backups deverão ser testados periodicamente para garantir que possam ser res
 
 ---
 
-# 23. Deployment
+# 23. Deployment e Infraestrutura
 
-A arquitetura de implantação poderá ser:
+A aplicação adota uma estratégia de implantação flexível, suportando tanto o modelo serverless gerenciado quanto o modelo padronizado em contêineres OCI com infraestrutura declarativa:
 
 ```text
-                 Internet
-                    │
-                    ▼
-              HTTPS / DNS
-                    │
-                    ▼
-             Reverse Proxy
-                    │
-            ┌───────┴───────┐
-            │               │
-            ▼               ▼
-        Frontend         Backend API
-                            │
-                            ▼
-                        Database
+                  Internet / Clientes
+                          │
+                          ▼
+                    HTTPS / TLS 1.3
+                          │
+                          ▼
+                   Cloud CDN / DNS
+                          │
+        ┌─────────────────┴─────────────────┐
+        ▼                                   ▼
+ [Ambiente Vercel / Edge]          [Ambiente OCI Container]
+ (Deploy Contínuo Serverless)      (Docker Multi-Stage / K8s / Cloud Run)
+        │                                   │
+        └─────────────────┬─────────────────┘
+                          │
+                          ▼
+              PostgreSQL Relacional (Supabase)
+                          ▲
+                          │
+               External Services Gateway
+                 ├── Clerk (Auth & RBAC)
+                 └── Google Gemini / LLM (IA Diagnóstico)
 ```
 
-O frontend e backend poderão inicialmente ser hospedados em uma infraestrutura de nuvem.
+## 23.1 Empacotamento em Contêineres OCI (Docker)
+
+Para garantir portabilidade entre provedores (AWS, GCP, Azure, DigitalOcean ou on-premises), a aplicação é empacotada através de um `Dockerfile` multi-stage padronizado OCI:
+- **Camada `base`:** `node:20-alpine` com dependências de sistema mínimas.
+- **Camada `deps`:** Cache inteligente de dependências (`npm ci`).
+- **Camada `builder`:** Compilação com `output: 'standalone'` no Next.js e Prisma Client.
+- **Camada `runner`:** Execução com usuário sem privilégios (`nextjs`), reduzindo superfície de ataque e tamanho de imagem (< 180MB).
+
+## 23.2 Infraestrutura como Código (Terraform)
+
+Para cumprir o requisito de reprodutibilidade e governança (RNF-06), todos os recursos de nuvem são declarados via **Terraform**:
+- **Provedores:** Provedor de nuvem (ex: AWS ou local Docker provider para desenvolvimento) e gerenciamento de banco de dados.
+- **Módulos:** Configurações de rede, compute/contêineres, variáveis de ambiente seguras e regras de firewall/ingress.
+- **Idempotência:** Toda a infraestrutura pode ser destruída e recriada do zero (`terraform apply` / `terraform destroy`) de forma 100% determinística.
 
 ---
 
@@ -969,90 +994,115 @@ No MVP, serão utilizadas somente notificações internas.
 
 ## ADR-005 — Frontend Responsivo
 
-**Decisão:** aplicação web responsiva.
+**Decisão:** aplicação web responsiva com SSR/CSR híbrido via Next.js App Router.
 
 **Motivo:** permite acesso tanto por computadores utilizados pela assistência quanto por smartphones utilizados pelos clientes.
 
 ---
 
-# 33. Tecnologias Sugeridas
+## ADR-006 — Assistente de IA com Gateway Desacoplado (Tecnologia de Fronteira)
 
-A implementação poderá utilizar:
+**Decisão:** implementar o assistente de pré-diagnóstico e estimativas de preços através de um serviço de aplicação (`AiDiagnosisService`) isolado na camada de aplicação, comunicando-se com LLMs modernas (Google Gemini API / OpenAI) através de um Adapter de infraestrutura (`AiProviderGateway`).
 
-### Frontend
-
-```text
-React
-TypeScript
-HTML
-CSS
-```
-
-### Backend
-
-```text
-Java
-Spring Boot
-Spring Security
-JPA / Hibernate
-```
-
-### Banco de dados
-
-```text
-PostgreSQL
-```
-
-### Infraestrutura
-
-```text
-Docker
-Git
-CI/CD
-Cloud
-```
-
-### Testes
-
-```text
-JUnit
-Mockito
-Testcontainers
-Playwright
-```
-
-Essas tecnologias são sugestões arquiteturais e poderão ser substituídas por alternativas equivalentes.
+**Motivo:** 
+- Agrega valor real de negócio ao acelerar a triagem e reduzir erros na formulação inicial de orçamentos.
+- O desacoplamento através de interface permite trocar o provedor de LLM sem alterar as regras de negócio.
+- O sistema opera com tolerância a falhas (resiliência): se o serviço de IA estiver indisponível ou lento, o operador continua o fluxo manual sem interrupções.
 
 ---
 
-# 34. Estrutura do Projeto
+## ADR-007 — Empacotamento em Contêineres OCI e Infraestrutura como Código (Terraform)
 
-Uma possível estrutura do backend:
+**Decisão:** empacotar a aplicação utilizando `Dockerfile` multi-stage em conformidade com o padrão OCI, e gerenciar os recursos de infraestrutura de forma declarativa e versionada utilizando Terraform.
+
+**Motivo:**
+- Atende aos requisitos rigorosos de portabilidade, reprodutibilidade e conformidade com o RNF-06.
+- Permite implantar a aplicação tanto em provedores serverless (Vercel) quanto em orquestradores de contêineres (AWS ECS, GCP Cloud Run, Kubernetes ou Docker local).
+- Garante ambientes idênticos entre desenvolvimento, homologação e produção, evitando desvios de configuração (*configuration drift*).
+
+---
+
+# 33. Tecnologias da Stack Oficial
+
+A solução implementa a seguinte stack tecnológica de alta performance e tipagem estática rigorosa:
+
+### Frontend & Backend (Fullstack Modular)
+```text
+Next.js 14+ (App Router, Server Actions, Route Handlers)
+React 18+
+TypeScript (strict: true)
+Tailwind CSS & Lucide Icons
+```
+
+### Autenticação & Autorização
+```text
+Clerk (Sessões JWT, MFA, RBAC com 4 perfis)
+```
+
+### Banco de Dados & ORM
+```text
+PostgreSQL (hospedado no Supabase)
+Prisma ORM (modelagem relacional, migrações SQL e queries tipadas)
+```
+
+### Inteligência Artificial (Tecnologia de Fronteira)
+```text
+Google Generative AI SDK (@google/genai ou @google/generative-ai / Gemini 1.5/2.0)
+Prompt Engineering com JSON Schema estruturado
+```
+
+### Empacotamento, Infraestrutura & CI/CD
+```text
+Docker (Multi-Stage OCI compliant)
+Terraform (Infraestrutura como Código declarativa)
+GitHub Actions (Pipeline CI de Lint, Typecheck e Playwright)
+Vercel & Supabase Cloud
+```
+
+### Testes Automatizados
+```text
+Vitest (Testes unitários de regras de domínio e integração)
+Playwright (Testes End-to-End ponta a ponta)
+```
+
+---
+
+# 34. Estrutura do Monorepo Modular
+
+Estrutura implementada do projeto:
 
 ```text
-techtrack-backend/
-│
+techtrack/
+├── docs/                               # Especificações, PRD, arquitetura e design
+├── prisma/                             # Schemas relacionais e migrações SQL
+│   ├── schema.prisma
+│   └── migrations/
+├── terraform/                          # Infraestrutura como Código (IaC)
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   └── terraform.tfvars.example
+├── Dockerfile                          # Empacotamento OCI multi-stage
+├── docker-compose.yml                  # Orquestração local
 ├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── com/techtrack/
-│   │   │       │
-│   │   │       ├── auth/
-│   │   │       ├── user/
-│   │   │       ├── customer/
-│   │   │       ├── equipment/
-│   │   │       ├── serviceorder/
-│   │   │       ├── budget/
-│   │   │       ├── history/
-│   │   │       └── notification/
-│   │   │
-│   │   └── resources/
-│   │       └── application.yml
-│   │
-│   └── test/
-│
-├── Dockerfile
-├── pom.xml
+│   ├── app/                            # Next.js App Router (Páginas e APIs)
+│   │   ├── (admin)/                    # Rotas administrativas desktop
+│   │   ├── (customer)/                 # Rotas do portal do cliente mobile
+│   │   └── api/v1/                     # Endpoints RESTful
+│   │       ├── ai/estimate/            # Endpoint de Inteligência Artificial
+│   │       ├── service-orders/         # Ciclo de vida e máquina de estados
+│   │       └── ...
+│   ├── modules/                        # Camadas de Domínio e Aplicação
+│   │   ├── ai/                         # Módulo de Inteligência Artificial
+│   │   ├── auth/                       # Autenticação e RBAC
+│   │   ├── customers/                  # Gestão de clientes
+│   │   ├── equipment/                  # Gestão de equipamentos
+│   │   ├── service-orders/             # Ordem de serviço e histórico
+│   │   └── budgets/                    # Orçamentos e transações ACID
+│   └── shared/                         # Utilitários, Prisma client e componentes
+├── package.json
+└── tsconfig.json
+```
 └── README.md
 ```
 

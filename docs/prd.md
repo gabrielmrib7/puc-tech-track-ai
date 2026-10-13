@@ -311,6 +311,14 @@ O sistema deve permitir registrar a conclusão do reparo.
 
 O sistema deve permitir marcar o equipamento como entregue ao cliente.
 
+## RF16 — Assistente de IA para Pré-Diagnóstico e Estimativa de Preços (Tecnologia de Fronteira)
+
+O sistema deve fornecer um assistente de inteligência artificial integrado ao fluxo de triagem e diagnóstico que, a partir do tipo, marca, modelo e defeito relatado do equipamento, sugere automaticamente ao atendente e ao técnico:
+1. Pré-diagnóstico técnico provável das causas do defeito.
+2. Estimativa de faixa de preços de mão de obra e peças com base em padrões de reparo.
+3. Lista sugerida de componentes/peças prováveis para substituição.
+4. Nível de complexidade e tempo estimado de reparo.
+
 ---
 
 # 7. Requisitos Não Funcionais
@@ -346,6 +354,10 @@ Alterações relevantes devem possuir registro de usuário, data e ação realiz
 ## RNF08 — Usabilidade
 
 O sistema deve utilizar linguagem simples e apresentar claramente o status atual da ordem.
+
+## RNF09 — Portabilidade, Contêineres OCI e Infraestrutura como Código (IaC)
+
+A solução deve permitir empacotamento completo em contêiner compatível com o padrão OCI (Open Container Initiative) através de Dockerfile multi-stage otimizado, e provisionamento de infraestrutura computacional de forma declarativa e automatizada por meio de scripts de Infraestrutura como Código (Terraform).
 
 ---
 
@@ -397,18 +409,20 @@ O cliente deve visualizar somente informações apropriadas para o acompanhament
 
 ## Incluído
 
-- Autenticação.
-- Clientes.
-- Equipamentos.
-- Ordens de serviço.
-- Status.
-- Diagnóstico.
-- Orçamento.
-- Aprovação do cliente.
-- Histórico.
-- Painel administrativo.
-- Área de acompanhamento do cliente.
-- Interface responsiva.
+- Autenticação e RBAC.
+- Gestão de clientes.
+- Gestão de equipamentos.
+- Ordens de serviço e ciclo de vida.
+- Máquina de estados com validação rigorosa.
+- Diagnóstico técnico.
+- Orçamento com cálculo automático.
+- Aprovação/recusa atômica do cliente (ACID).
+- Histórico imutável de alterações (auditoria).
+- Painel administrativo desktop de alta densidade.
+- Área de acompanhamento do cliente mobile-first.
+- Interface responsiva acessível (WCAG AA).
+- **Assistente de Inteligência Artificial para sugestão de pré-diagnósticos, peças e faixa de preços (Tecnologia de Fronteira).**
+- **Empacotamento em contêineres padrão OCI (Dockerfile multi-stage) e Infraestrutura como Código (Terraform).**
 
 ## Fora do MVP
 
@@ -417,13 +431,12 @@ As seguintes funcionalidades poderão ser consideradas posteriormente:
 - Integração com WhatsApp.
 - Pagamentos online.
 - Emissão de nota fiscal.
-- Controle de estoque de peças.
-- Controle financeiro.
-- Integração com fornecedores.
-- Aplicativo mobile nativo.
-- Inteligência artificial para diagnóstico.
-- Relatórios avançados.
-- Integração com sistemas externos.
+- Controle de estoque avançado com múltiplos fornecedores.
+- Controle financeiro avançado.
+- Integração com gateways de pagamento.
+- Aplicativo mobile nativo (iOS/Android).
+- Relatórios avançados de BI.
+- Integração com ERPs externos.
 
 ---
 
@@ -508,6 +521,22 @@ Obter avaliação média mínima de 4 em uma escala de 1 a 5 na experiência de 
 **quando** a alteração for confirmada,
 
 **então** o sistema deve registrar a ação, usuário e data.
+
+### CA08 — Assistente de IA para Pré-Diagnóstico e Preço
+
+**Dado** que o atendente ou técnico esteja na tela de abertura ou triagem de uma ordem de serviço,
+
+**quando** acionar a sugestão do assistente de IA informando o equipamento e o defeito relatado,
+
+**então** o sistema deve retornar e exibir em interface uma sugestão estruturada contendo provável pré-diagnóstico, faixa estimada de custos (peças e mão de obra), peças recomendadas e nível de complexidade, permitindo ao operador aplicar ou ajustar os valores com um clique.
+
+### CA09 — Empacotamento em Contêiner OCI e IaC
+
+**Dado** o repositório do projeto,
+
+**quando** for executado o build do contêiner OCI via `docker build`,
+
+**então** uma imagem enxuta, segura e funcional da aplicação deve ser gerada, e a infraestrutura necessária deve ser passível de provisionamento automatizado e reproduzível através de templates declarativos do Terraform.
 
 ---
 

@@ -510,6 +510,39 @@ Informações internas da assistência não deverão ser exibidas.
 
 ---
 
+# 19.1. UC09 — Solicitar Sugestão de Pré-Diagnóstico e Estimativa com IA (Tecnologia de Fronteira)
+
+**Atores:** Atendente, Técnico, Administrador
+
+### Objetivo
+Auxiliar a equipe técnica e de atendimento na triagem inicial e na elaboração de orçamentos, gerando automaticamente uma análise preditiva fundamentada nos sintomas relatados e no modelo do aparelho.
+
+### Pré-condições
+- Usuário autenticado com perfil de staff (`ATTENDANT`, `TECHNICIAN` ou `ADMIN`).
+- Dados do equipamento informados (tipo, marca, modelo) e descrição do defeito relatado preenchida.
+
+### Fluxo Principal
+1. O operador aciona o botão **"Sugerir com IA"** durante a criação/edição da OS ou no registro de orçamento.
+2. O frontend envia os dados via `POST /api/v1/ai/estimate`.
+3. O serviço de IA analisa as características do equipamento e o histórico de defeitos conhecidos para aquele modelo.
+4. O sistema retorna um objeto estruturado contendo:
+   - **`suggested_diagnosis`**: texto técnico claro explicando as causas mais prováveis da falha.
+   - **`suggested_parts`**: lista de componentes sugeridos para inspeção ou troca.
+   - **`estimated_parts_cost`**: estimativa de custo de peças (em BRL).
+   - **`estimated_labor_cost`**: estimativa de mão de obra (em BRL).
+   - **`complexity`**: nível de complexidade da intervenção (`BAIXA`, `MEDIA`, `ALTA`).
+   - **`confidence_score`**: índice de confiança da estimativa (0.0 a 1.0).
+5. O operador revisa os dados sugeridos na interface.
+6. O operador pode aceitar com 1 clique (preenchendo os campos do formulário automaticamente) ou realizar ajustes manuais antes da gravação.
+
+### Fluxos Alternativos e Exceções
+- **Provedor de IA Indisponível / Timeout:**
+  Caso o serviço externo de IA apresente indisponibilidade ou latência excessiva (> 8s), o backend responde com código HTTP `503` ou fallback estruturado, permitindo que o operador prossiga normalmente com o preenchimento manual sem interromper o fluxo de atendimento.
+- **Entrada com dados insuficientes:**
+  Se o defeito relatado for muito genérico (ex: "não liga"), a IA orienta verificações primárias (fonte de alimentação, bateria, conector de carga) e indica nível de confiança reduzido.
+
+---
+
 # 20. API
 
 A comunicação entre frontend e backend será realizada através de uma API REST.
@@ -589,6 +622,54 @@ PATCH /api/service-orders/{id}/budget/reject
 
 ```http
 GET /api/service-orders/{id}/history
+```
+
+---
+
+## Inteligência Artificial (Tecnologia de Fronteira)
+
+```http
+POST /api/v1/ai/estimate
+```
+
+#### Contrato do Endpoint de IA
+
+**Headers Obrigatórios:**
+```http
+Content-Type: application/json
+Authorization: Bearer <clerk_session_token>
+```
+
+**Payload de Requisição (`POST /api/v1/ai/estimate`):**
+```json
+{
+  "equipmentType": "Notebook",
+  "brand": "Dell",
+  "model": "Inspiron 15 3520",
+  "reportedProblem": "Equipamento não liga após queda e conector de carga está folgado",
+  "orderId": "optional-uuid"
+}
+```
+
+**Payload de Resposta de Sucesso (`200 OK`):**
+```json
+{
+  "suggestedDiagnosis": "Possível falha no circuito de entrada de alimentação (jack DC danificado ou trilha rompida). Há risco secundário de mau contato no circuito do regulador de tensão (VRM) decorrente do impacto mecânico da queda.",
+  "suggestedParts": [
+    "Conector Jack DC com chicote",
+    "Pasta térmica de alto desempenho (revisão preventiva)"
+  ],
+  "estimatedPartsCost": 120.00,
+  "estimatedLaborCost": 180.00,
+  "estimatedTotal": 300.00,
+  "complexity": "MEDIA",
+  "confidenceScore": 0.88,
+  "estimatedHours": 3,
+  "recommendations": [
+    "Testar placa-mãe na bancada com fonte assimétrica antes de substituir componentes adicionais.",
+    "Checar integridade do barramento do cooler e das memórias RAM após o impacto."
+  ]
+}
 ```
 
 ---
@@ -1099,6 +1180,87 @@ Backend
 Banco de dados relacional
 ```
 
-Os módulos de autenticação, clientes, equipamentos, ordens de serviço e histórico deverão permanecer separados logicamente, permitindo evolução futura sem necessidade de alterar toda a aplicação.
+Os módulos de autenticação, clientes, equipamentos, ordens de serviço, orçamentos, assistente de IA e histórico deverão permanecer separados logicamente, permitindo evolução futura sem necessidade de alterar toda a aplicação.
+
+---
+
+# 39. Empacotamento em Contêineres OCI (Docker)
+
+Para atender aos requisitos de portabilidade, reprodutibilidade e conformidade com os padrões da OCI (Open Container Initiative), a aplicação deve fornecer empacotamento completo via `Dockerfile` multi-stage:
+
+### Estágios do Build OCI
+
+1. **`base` (`node:20-alpine`):**
+   - Imagem base minimalista e segura, com instalação de `libc6-compat` para compatibilidade com binários do Prisma.
+2. **`deps`:**
+   - Instalação estrita de dependências a partir do `package.json` e `package-lock.json` via `npm ci`.
+3. **`builder`:**
+   - Geração dos artefatos tipados do Prisma Client (`npx prisma generate`).
+   - Compilação otimizada do Next.js em modo standalone (`output: 'standalone'`).
+4. **`runner`:**
+   - Execução sob usuário não-root dedicado (`nextjs:nodejs`, UID/GID 1001).
+   - Cópia isolada dos artefatos de `.next/standalone`, `.next/static` e pasta `public`.
+   - Exposição da porta de serviço `3000` com health check configurado.
+
+### Docker Compose
+Deverá ser fornecido um arquivo `docker-compose.yml` para orquestração local de desenvolvimento e testes integrados de contêineres, incluindo a aplicação e o banco de dados PostgreSQL.
+
+---
+
+# 40. Infraestrutura como Código (IaC — Terraform)
+
+Para garantir reprodutibilidade, governança e conformidade com o RNF-06, a infraestrutura da aplicação deverá ser definida de forma puramente declarativa utilizando **Terraform (HCL)**:
+
+### Estrutura dos Arquivos de Infraestrutura (`terraform/`)
+
+```text
+terraform/
+├── main.tf           # Provedores e definição central dos recursos
+├── variables.tf      # Declaração tipada de variáveis de entrada
+├── outputs.tf        # Valores de saída (endpoints, IDs de recursos, DNS)
+└── terraform.tfvars.example # Modelo de variáveis com valores de exemplo
+```
+
+### Recursos Provisionados
+1. **Rede e Segurança:** Grupos de segurança e regras de tráfego HTTPS (porta 443/80).
+2. **Computação / Contêineres:** Instância ou cluster gerenciado para execução da imagem OCI da aplicação TechTrack.
+3. **Persistência Relacional:** Provisionamento de banco de dados PostgreSQL com criptografia em repouso e backups habilitados.
+4. **Configurações e Variáveis de Ambiente:** Injeção segura das variáveis de runtime (`DATABASE_URL`, chaves do Clerk, API Key do assistente de IA).
+
+---
+
+# 41. Arquitetura do Assistente de IA (Tecnologia de Fronteira)
+
+O módulo de IA opera como um componente de assistência cognitiva no fluxo de negócio da assistência técnica:
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                    TechTrack Web Application                     │
+│                                                                 │
+│  [Atendente / Técnico] ──► [Formulário de OS / Orçamento]       │
+│                                       │                         │
+│                                       ▼                         │
+│                    POST /api/v1/ai/estimate                    │
+│                                       │                         │
+│  ┌────────────────────────────────────┼──────────────────────┐  │
+│  │ Módulo de IA                       │                      │  │
+│  │                                    ▼                      │  │
+│  │                   ┌──────────────────────────────┐        │  │
+│  │                   │ AiDiagnosisService           │        │  │
+│  │                   │ (Aplicação / Domínio)        │        │  │
+│  │                   └──────────────┬───────────────┘        │  │
+│  │                                  │                        │  │
+│  │                   ┌──────────────▼───────────────┐        │  │
+│  │                   │ AiProviderAdapter (Infra)    │        │  │
+│  │                   └──────────────┬───────────────┘        │  │
+│  └──────────────────────────────────┼────────────────────────┘  │
+└─────────────────────────────────────┼───────────────────────────┘
+                                      │
+                                      ▼
+                        ┌───────────────────────────┐
+                        │ Provedor LLM Externo      │
+                        │ (Google Gemini / OpenAI)  │
+                        └───────────────────────────┘
+```
 
 A arquitetura detalhada deverá ser definida no documento `architecture.md`.
