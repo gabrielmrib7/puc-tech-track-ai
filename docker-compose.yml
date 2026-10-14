@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: techtrack-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-techtrack}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-techtrack_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-techtrack}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U techtrack"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: techtrack-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-techtrack}:${POSTGRES_PASSWORD:-techtrack_secret}@db:5432/${POSTGRES_DB:-techtrack}?schema=public
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-pk_test_placeholder}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:-sk_test_placeholder}
+      TECHTRACK_ADMIN_BOOTSTRAP_EMAIL: ${TECHTRACK_ADMIN_BOOTSTRAP_EMAIL:-admin@techtrack.com}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+    driver: local

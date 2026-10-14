@@ -34,6 +34,8 @@ Para garantir a entrega de um produto robusto, estável e em conformidade estrit
 | **06** | **Orçamentos e Transação ACID de Decisão** | Médio | Média | Médio | `techtrack_aprova_o_de_or_amento_mobile` | `05` | Concluída / Arquivada |
 | **07** | **Portal do Cliente Mobile-First** | Médio | Média | Médio | `techtrack_portal_do_cliente_mobile` | `06` | Concluída / Arquivada |
 | **08** | **Dashboard Administrativo e Entrega Final** | Médio | Média | Baixo | `techtrack_dashboard_administrativo` | `07` | Concluída / Arquivada |
+| **09** | **Contêineres OCI e Terraform IaC** | Médio | Média | Baixo | Infraestrutura / Deploy declarativo | `01` | Concluída / Arquivada |
+| **10** | **Assistente de IA para Pré-Diagnóstico (RF3)** | Médio | Média | Médio | `techtrack_nova_ordem_de_servi_o` (IA Card) | `04` | Concluída / Arquivada |
 
 ---
 
@@ -162,6 +164,34 @@ O ciclo inicial de desenvolvimento estabeleceu as fundações arquiteturais e o 
   * Endpoints REST: [`src/app/api/v1/admin/dashboard/route.ts`](src/app/api/v1/admin/dashboard/route.ts), [`src/app/api/v1/service-orders/[id]/deliver/route.ts`](src/app/api/v1/service-orders/[id]/deliver/route.ts).
   * Painel Dashboard: [`src/app/admin/dashboard/page.tsx`](src/app/admin/dashboard/page.tsx).
   * Testes de Agregação: [`src/modules/service-orders/application/metrics.spec.ts`](src/modules/service-orders/application/metrics.spec.ts).
+
+---
+
+### [Mudança 09: Empacotamento em Contêineres OCI e Infraestrutura como Código](openspec/changes/archive/2026-10-13-09-container-and-iac/)
+* **Objetivo:** Atendimento ao requisito RNF-06 / RNF09 (Portabilidade e IaC). Empacotamento em contêiner OCI multi-stage com Next.js em modo `standalone`, orquestração local de desenvolvimento via Docker Compose e manifests declarativos do Terraform (`terraform/`).
+* **Artefatos OpenSpec:** `proposal.md`, `specs/`, `design.md`, `tasks.md`.
+* **Artefatos Implementados:**
+  * Configuração de Build: [`next.config.mjs`](next.config.mjs) (`output: 'standalone'`).
+  * Contêiner OCI Multi-Stage: [`Dockerfile`](Dockerfile), [`.dockerignore`](.dockerignore).
+  * Orquestração Local: [`docker-compose.yml`](docker-compose.yml).
+  * Infraestrutura Declarativa: [`terraform/main.tf`](terraform/main.tf), [`terraform/variables.tf`](terraform/variables.tf), [`terraform/outputs.tf`](terraform/outputs.tf).
+  * Spec Durável: [`openspec/specs/containerization-and-iac/spec.md`](openspec/specs/containerization-and-iac/spec.md).
+
+---
+
+### [Mudança 10: Tecnologia de Fronteira — Assistente de IA para Pré-Diagnóstico e Orçamento](openspec/changes/archive/2026-10-13-10-ai-diagnosis-assistant/)
+* **Objetivo:** Atendimento ao requisito RF3 / RF16 (Tecnologia de Fronteira — 14 pontos). Assistente de IA desacoplado por Gateway (`AiDiagnosisGateway`) para apoiar o atendente/técnico no momento da abertura e triagem de OS, sugerindo provável defeito, estimativa de custos em BRL e peças.
+* **Artefatos OpenSpec:** `proposal.md`, `specs/`, `design.md`, `tasks.md`.
+* **Artefatos Implementados:**
+  * Schemas de Domínio: [`src/modules/ai-assistant/domain/schemas.ts`](src/modules/ai-assistant/domain/schemas.ts).
+  * Porta de Gateway: [`src/modules/ai-assistant/application/ai-diagnosis-gateway.ts`](src/modules/ai-assistant/application/ai-diagnosis-gateway.ts).
+  * Caso de Uso Resiliente: [`src/modules/ai-assistant/application/generate-ai-estimate.ts`](src/modules/ai-assistant/application/generate-ai-estimate.ts) (timeout 5s e contingência automática).
+  * Adaptador Gemini e Heurística: [`src/modules/ai-assistant/infrastructure/gemini-gateway.ts`](src/modules/ai-assistant/infrastructure/gemini-gateway.ts).
+  * Endpoint REST com RBAC: [`src/app/api/v1/ai/estimate/route.ts`](src/app/api/v1/ai/estimate/route.ts) (`requireStaff(['ADMIN', 'ATTENDANT', 'TECHNICIAN'])`).
+  * Componente Interativo de UI: [`src/modules/ai-assistant/presentation/ai-diagnosis-card.tsx`](src/modules/ai-assistant/presentation/ai-diagnosis-card.tsx).
+  * Integração na Triagem: [`src/app/service-orders/new/page.tsx`](src/app/service-orders/new/page.tsx) (preenchimento em 1 clique).
+  * Spec Durável: [`openspec/specs/ai-diagnosis-assistant/spec.md`](openspec/specs/ai-diagnosis-assistant/spec.md).
+  * Testes Automatizados: [`src/modules/ai-assistant/application/generate-ai-estimate.spec.ts`](src/modules/ai-assistant/application/generate-ai-estimate.spec.ts), [`src/app/api/v1/ai/estimate/route.spec.ts`](src/app/api/v1/ai/estimate/route.spec.ts).
 
 ---
 

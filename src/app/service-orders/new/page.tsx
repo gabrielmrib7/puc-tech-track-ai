@@ -8,6 +8,7 @@ import { AdminShell } from "@/shared/components/AdminShell";
 import { SubmitButton } from "@/shared/components/SubmitButton";
 import { apiGet, apiPost } from "@/shared/lib/api-client";
 import { ROUTES } from "@/shared/constants/routes";
+import { AiDiagnosisCard } from "@/modules/ai-assistant/presentation/ai-diagnosis-card";
 import type { Customer, Equipment, PaginatedResponse, ServiceOrder } from "@/shared/types/api";
 
 export default function NewServiceOrderPage() {
@@ -23,6 +24,8 @@ export default function NewServiceOrderPage() {
   const [equipmentId, setEquipmentId] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
   const [estimatedCompletion, setEstimatedCompletion] = useState("");
+
+  const selectedEquipment = equipmentList.find((eq) => eq.id === equipmentId);
 
   // Submission State
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -224,6 +227,16 @@ export default function NewServiceOrderPage() {
               disabled={isSubmitting}
               placeholder="Descreva detalhadamente os sintomas reportados pelo cliente e observações preliminares..."
               className="mt-2 w-full rounded-lg border border-[#c3c6d7] bg-white p-3 text-sm text-[#131b2e] outline-none focus:border-[#004ac6] disabled:opacity-60"
+            />
+
+            <AiDiagnosisCard
+              equipmentType={selectedEquipment?.type || ""}
+              brand={selectedEquipment?.brand || ""}
+              model={selectedEquipment?.model || ""}
+              reportedDefect={diagnosis}
+              onApplySuggestion={(suggestionText) => {
+                setDiagnosis((prev) => (prev ? `${prev}\n\n${suggestionText}` : suggestionText));
+              }}
             />
           </div>
 
